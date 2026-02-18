@@ -1,0 +1,10 @@
+MYSQL_HOST = "localhost"
+MYSQL_USER = "root"
+MYSQL_PASSWORD = "yourpass"
+MYSQL_DB = "CarCustomShop"
+
+MONGO_URI = "mongodb://localhost:27017/"
+MONGO_DB = "CarCustomShop"
+
+
+// change this file to your password and change file name to "config.py"

@@ -1,0 +1,14 @@
+# =========================
+# Python / Flask
+# =========================
+backend/venv/
+backend/__pycache__/
+backend/*.pyc
+
+# Environment variables / secrets
+backend/.env
+backend/config.py
+
+# OS junk
+.DS_Store
+Thumbs.db
