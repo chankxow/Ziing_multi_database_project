@@ -11,7 +11,7 @@ services:
       MYSQL_USER: shopuser
       MYSQL_PASSWORD: shoppass
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
       - ./backend/sql:/docker-entrypoint-initdb.d
@@ -75,21 +75,23 @@ services:
     command: flask run --host=0.0.0.0
 
   # Frontend (Optional - for development)
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: car_custom_frontend
-    ports:
-      - "5173:5173"
-    volumes:
-      - ./frontend/src:/app/src
-      - ./frontend/public:/app/public
-    networks:
-      - app_network
-    environment:
-      - VITE_API_URL=http://localhost:5000
-    command: npm run dev
+  # ⚠️ DISABLED by default - รัน npm run dev แยก locally สำหรับ hot reload ที่ดีกว่า
+  # ถ้าต้องการใช้ Docker, uncomment section นี้ และ comment command ใน frontend development
+  #frontend:
+  #  build:
+  #    context: ./frontend
+  #    dockerfile: Dockerfile
+  #  container_name: car_custom_frontend
+  #  ports:
+  #    - "5173:5173"
+  #  volumes:
+  #    - ./frontend/src:/app/src
+  #    - ./frontend/public:/app/public
+  #  networks:
+  #    - app_network
+  #  environment:
+  #    - VITE_API_URL=http://localhost:5000
+  #  command: npm run dev --host 0.0.0.0
 
 volumes:
   mysql_data:

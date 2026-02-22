@@ -1,32 +1,5 @@
 # =========================
-# Python / Flask
-# =========================
-backend/venv/
-backend/env/
-*.pyc
-__pycache__/
-*.egg-info/
-dist/
-build/
-.Python
-pip-log.txt
-pip-delete-this-directory.txt
-
-# =========================
-# Node.js / Frontend
-# =========================
-frontend/node_modules/
-frontend/dist/
-frontend/dist-ssr/
-frontend/*.local
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
-# =========================
-# Environment & Secrets
+# 🔒 SECRETS & CREDENTIALS (ต้องซ่อน!)
 # =========================
 .env
 .env.local
@@ -37,101 +10,111 @@ frontend/.env
 frontend/.env.local
 
 # =========================
+# Python / Flask
+# =========================
+backend/venv/
+backend/env/
+backend/.venv/
+*.pyc
+__pycache__/
+*.egg-info/
+.mypy_cache/
+.python-version
+pip-log.txt
+pip-delete-this-directory.txt
+
+# =========================
+# Node.js / Frontend
+# =========================
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/*.local
+
+# Npm/Yarn logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+.npm
+
+# =========================
 # IDE & Editor
 # =========================
 .vscode/
-.idea/
-*.swp
-*.swo
-*~
-*.sublime-project
-*.sublime-workspace
-.DS_Store
-
-# =========================
-# IDE specific
-# =========================
-.vscode
 .vscode/*
 !.vscode/extensions.json
-.idea
+.idea/
+*.sublime-project
+*.sublime-workspace
 *.iml
 *.iws
 *.ipr
-*.sublime-workspace
-*.sublime-project
+*.swp
+*.swo
+*~
 
 # =========================
-# OS specific
+# OS Specific
 # =========================
 .DS_Store
+.AppleDouble
+.LSOverride
 Thumbs.db
 Desktop.ini
 ehthumbs.db
 
 # =========================
-# Docker
+# Docker Volumes & Data
 # =========================
+mysql-data/
+mongo-data/
 docker-compose.override.yml
-.dockerignore
 
 # =========================
-# Database files
+# Database Files
 # =========================
 *.db
 *.sqlite
 *.sqlite3
-mysql-data/
-mongo-data/
 
 # =========================
-# Logs
+# Build & Distribution
+# =========================
+dist/
+build/
+out/
+
+# =========================
+# Logs & Temporary
 # =========================
 logs/
 *.log
 test-results/
-
-# =========================
-# Temporary files
-# =========================
 *.tmp
 *.bak
-*.swp
-*.swo
-*~
 .cache/
 .pytest_cache/
 
 # =========================
-# Build outputs
+# Package Manager Cache
 # =========================
-/dist
-/build
-out/
-
-# =========================
-# Package manager caches
-# =========================
-.npm
 .yarn/cache
 .yarn/build-state.yml
 .pnp.*
 
 # =========================
-# IDEs
-# =========================
-/vscode
-/.vscode
-/IntelliJ
-/.idea
-.cljs_rhino_repl/
-*_jvm.js
-*_js.js
-
-# =========================
-# Project specific
+# Project Specific
 # =========================
 backend/config.txt
-!backend/.env.example
+
+# =========================
+# ALLOW TEMPLATES (ต้องมี!)
+# =========================
 !.env.example
-config.txt
+!backend/.env.example
+!backend/.env.local.example
+!frontend/.env.example
+!.gitignore
+!.gitattributes

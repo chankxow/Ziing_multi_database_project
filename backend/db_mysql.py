@@ -11,10 +11,13 @@ MYSQL_USER = os.getenv("MYSQL_USER", "root")
 MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD", "yourpass")
 MYSQL_DB = os.getenv("MYSQL_DB", "CarCustomShop")
 
-# Create connection
+# Lazy connection - ไม่เชื่อมต่อจนกว่าจะมีการใช้งาน
+conn = None
+
 def get_connection():
+    """สร้างและส่งคืน MySQL connection"""
     try:
-        conn = pymysql.connect(
+        connection = pymysql.connect(
             host=MYSQL_HOST,
             port=MYSQL_PORT,
             user=MYSQL_USER,
@@ -23,17 +26,26 @@ def get_connection():
             cursorclass=pymysql.cursors.DictCursor,
             autocommit=True
         )
-        return conn
+        print(f"✅ MySQL connected to {MYSQL_HOST}:{MYSQL_PORT}")
+        return connection
     except pymysql.Error as e:
-        print(f"Database connection error: {e}")
+        print(f"❌ MySQL connection error: {e}")
+        print(f"   Trying to connect to: {MYSQL_HOST}:{MYSQL_PORT}")
+        print(f"   User: {MYSQL_USER}")
         raise
 
-conn = get_connection()
+def ensure_connection():
+    """ตรวจสอบและสร้าง connection ถ้ายังไม่มี"""
+    global conn
+    if conn is None:
+        conn = get_connection()
+    return conn
 
 def query(sql, params=None):
     """Execute SELECT query and return results"""
     try:
-        with conn.cursor() as cursor:
+        connection = ensure_connection()
+        with connection.cursor() as cursor:
             cursor.execute(sql, params)
             return cursor.fetchall()
     except pymysql.Error as e:
@@ -43,7 +55,8 @@ def query(sql, params=None):
 def execute(sql, params=None):
     """Execute INSERT/UPDATE/DELETE query"""
     try:
-        with conn.cursor() as cursor:
+        connection = ensure_connection()
+        with connection.cursor() as cursor:
             cursor.execute(sql, params)
             return {"status": "success"}
     except pymysql.Error as e:
