@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-
+import traceback
 from db_mysql import query, execute
 from db_mongo import get_parts_collection
 from config import check_db_connection
@@ -99,8 +99,12 @@ def get_workorders():
 # =========================
 @app.errorhandler(Exception)
 def handle_error(e):
-    return jsonify({"error": str(e)}), 500
+    traceback.print_exc()  
+    return jsonify({"error": "Internal Server Error"}), 500
 
+@app.route('/favicon.ico')
+def favicon():
+    return '', 204
 # =========================
 # Run Server
 # =========================
