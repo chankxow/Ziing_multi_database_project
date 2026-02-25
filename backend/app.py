@@ -3,9 +3,13 @@ from flask_cors import CORS
 
 from db_mysql import query, execute
 from db_mongo import get_parts_collection
+from config import check_db_connection
 
 app = Flask(__name__)
 CORS(app)   # 🔥 สำคัญมากสำหรับ React
+
+# ตรวจสอบการเชื่อมต่อฐานข้อมูลก่อนเริ่ม
+check_db_connection()
 
 # =========================
 # Root Test

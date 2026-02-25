@@ -66,13 +66,6 @@ Desktop.ini
 ehthumbs.db
 
 # =========================
-# Docker Volumes & Data
-# =========================
-mysql-data/
-mongo-data/
-docker-compose.override.yml
-
-# =========================
 # Database Files
 # =========================
 *.db

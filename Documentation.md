@@ -5,11 +5,10 @@
 2. [ข้อกำหนดเบื้องต้น](#ข้อกำหนดเบื้องต้น)
 3. [เริ่มต้นอย่างรวดเร็ว](#เริ่มต้นอย่างรวดเร็ว)
 4. [ตั้งค่าการพัฒนาท้องถิ่น](#ตั้งค่าการพัฒนาท้องถิ่น)
-5. [เซตอัพ Docker](#เซตอัพ-docker)
-6. [เทียบเค้า ฐานข้อมูล](#เทียบเค้า-ฐานข้อมูล)
-7. [ตรวจสอบระบบ](#ตรวจสอบระบบ)
-8. [การแก้ไขปัญหา](#การแก้ไขปัญหา)
-9. [FAQ](#faq)
+5. [โครงสร้างฐานข้อมูล](#เทียบเค้า-ฐานข้อมูล)
+6. [ตรวจสอบระบบ](#ตรวจสอบระบบ)
+7. [การแก้ไขปัญหา](#การแก้ไขปัญหา)
+8. [FAQ](#faq)
 
 ---
 
@@ -19,7 +18,7 @@ Ziing Multi-Database Project เป็นแอปพลิเคชัน Full-
 - **Backend**: Flask (Python)
 - **Frontend**: React + TypeScript + Vite
 - **Databases**: MySQL (ข้อมูลเชิงสัมพันธ์) + MongoDB (ข้อมูลแบบเอกสาร)
-- **Infrastructure**: Docker (ตัวเลือก) หรือการพัฒนาท้องถิ่นโดยตรง
+- **Infrastructure**: Local Development (ไม่มี Docker)
 
 ### วัตถุประสงค์
 จัดการข้อมูลลูกค้า ยานพาหนะ ชิ้นส่วน และคำสั่งงาน พร้อมฐานข้อมูลที่ปรับให้เหมาะสมสำหรับแต่ละประเภทข้อมูล
@@ -34,15 +33,33 @@ Ziing Multi-Database Project เป็นแอปพลิเคชัน Full-
 - **MySQL 8.0+** - https://dev.mysql.com/downloads/mysql/
 - **MongoDB Community** - https://www.mongodb.com/try/download/community
 
-### ตั้งค่า Docker
-- **Docker Desktop** - https://www.docker.com/products/docker-desktop
-- ~10GB พื้นที่ว่าง
-
 ---
 
 ## เริ่มต้นอย่างรวดเร็ว
 
-### วิธีที่ 1: ใช้สคริปต์ all-in-one-th.bat (Windows)
+### วิธีด่วน (Quick Start)
+
+**วิธีที่ 1: รันทีละแอป**
+
+```bash
+# ขั้นตอน 1: ตรวจสอบว่า MySQL และ MongoDB เปิดอยู่
+# MySQL: localhost:3306
+# MongoDB: localhost:27017
+
+# ขั้นตอน 2: รัน Backend
+cd backend
+pip install -r requirements.txt
+python app.py
+# จะแสดง: http://localhost:5000
+
+# ขั้นตอน 3: รัน Frontend (ในหน้าต่างใหม่)
+cd frontend
+npm install
+npm run dev
+# จะแสดง: http://localhost:5173
+```
+
+**วิธีที่ 2: ใช้สคริปต์ all-in-one-th.bat (Windows)**
 
 ```batch
 all-in-one-th.bat
@@ -54,27 +71,9 @@ all-in-one-th.bat
 3. ตรวจสอบฐานข้อมูล
 4. ตรวจสอบการเชื่อมต่อ
 5. ตั้งค่าการพัฒนาท้องถิ่น
-6. ตั้งค่า Docker
-7. เตรียมฐานข้อมูล
-8. ดูเอกสารประกอบ
-9. รันทั้งหมด
-
-### วิธีที่ 2: ตั้งค่าด้วยตนเอง
-
-```bash
-# Backend
-cd backend
-python -m venv venv
-venv\Scripts\activate.bat  # Windows
-source venv/bin/activate   # Mac/Linux
-pip install -r requirements.txt
-python app.py
-
-# Frontend (ในหน้าต่างใหม่)
-cd frontend
-npm install
-npm run dev
-```
+6. เตรียมฐานข้อมูล
+7. ดูเอกสารประกอบ
+8. รันทั้งหมด
 
 ---
 
@@ -84,9 +83,15 @@ npm run dev
 
 #### Windows
 1. ติดตั้ง Python - อย่าลืมเลือก "Add Python to PATH"
+   - https://www.python.org/downloads/
 2. ติดตั้ง Node.js
-3. ติดตั้ง MySQL - https://dev.mysql.com/downloads/mysql/
-4. ติดตั้ง MongoDB - https://www.mongodb.com/try/download/community
+   - https://nodejs.org/
+3. ติดตั้ง MySQL Community Server
+   - https://dev.mysql.com/downloads/mysql/
+   - ตั้งค่า: port 3306, root password
+4. ติดตั้ง MongoDB Community
+   - https://www.mongodb.com/try/download/community
+   - ตั้งค่า: port 27017
 
 #### Mac
 ```bash
@@ -94,6 +99,10 @@ brew install python3
 brew install node
 brew install mysql-community-server
 brew install mongodb-community
+
+# เริ่มบริการ
+brew services start mysql-community-server
+brew services start mongodb-community
 ```
 
 #### Linux (Ubuntu)
@@ -101,6 +110,10 @@ brew install mongodb-community
 sudo apt-get update
 sudo apt-get install python3 python3-pip nodejs npm
 sudo apt-get install mysql-server mongodb
+
+# เริ่มบริการ
+sudo systemctl start mysql
+sudo systemctl start mongod
 ```
 
 ### ขั้นตอนที่ 2: สร้าง Virtual Environment
@@ -130,26 +143,54 @@ npm install
 ### ขั้นตอนที่ 4: สร้างฐานข้อมูล
 
 ```bash
-# MySQL
-mysql -u root -e "CREATE DATABASE CarCustomShop;"
-mysql -u root CarCustomShop < backend\sql\init.sql
+# MySQL - สร้าง Database
+mysql -u root -p -e "CREATE DATABASE CarCustomShop;"
 
-# MongoDB
+# MySQL - นำเข้าตารางเบื้องต้น
+mysql -u root -p CarCustomShop < backend\sql\init.sql
+
+# MongoDB - สร้าง Collection (ตัวเลือก)
 mongosh --eval "use CarCustomShop; db.createCollection('parts');"
 ```
 
-### ขั้นตอนที่ 5: รันแอปพลิเคชัน
+### ขั้นตอนที่ 5: ตั้งค่า Environment Variables
+
+สร้างไฟล์ `.env` ในโฟลเดอร์ backend:
+
+```bash
+# backend/.env
+FLASK_ENV=development
+FLASK_DEBUG=1
+FLASK_APP=app.py
+
+# MySQL (localhost)
+MYSQL_HOST=localhost
+MYSQL_PORT=3306
+MYSQL_USER=root
+MYSQL_PASSWORD=your_mysql_password
+MYSQL_DB=CarCustomShop
+
+# MongoDB (localhost)
+MONGO_HOST=localhost
+MONGO_PORT=27017
+MONGO_DB=CarCustomShop
+```
+
+### ขั้นตอนที่ 6: รันแอปพลิเคชัน
 
 ```bash
 # Backend (หน้าต่างที่ 1)
 cd backend
 venv\Scripts\activate.bat  # Windows
+source venv/bin/activate   # Mac/Linux
 python app.py
 
 # Frontend (หน้าต่างที่ 2)
 cd frontend
 npm run dev
 ```
+
+
 
 **สำหรับเข้าถึง:**
 - Frontend: http://localhost:5173
@@ -159,54 +200,37 @@ npm run dev
 
 ---
 
-## เซตอัพ Docker
-
-### วิธีตั้งค่า Docker
-
-```bash
-# อยู่ในโฟลเดอร์โครงการ
-docker-compose up -d
-```
-
-### การเข้าถึง
-- Frontend: http://localhost:5173
-- Backend API: http://localhost:5000
-- MySQL: localhost:3307 (user: shopuser / password: shoppass)
-- MongoDB: localhost:27017 (user: admin / password: adminpass)
-
-### หยุด Docker
-```bash
-docker-compose down
-```
-
-### ลบข้อมูลดาต้าเบสทั้งหมด (ระวัง!)
-```bash
-docker-compose down -v
-```
-
----
-
-## เทียบเค้า ฐานข้อมูล
+## โครงสร้างฐานข้อมูล
 
 ### MySQL
 
 ```bash
 # สร้างฐานข้อมูล
-mysql -u root -e "CREATE DATABASE IF NOT EXISTS CarCustomShop;"
+mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS CarCustomShop;"
 
 # นำเข้าสคีมา
-mysql -u root CarCustomShop < backend/sql/init.sql
+mysql -u root -p CarCustomShop < backend/sql/init.sql
 
 # ตรวจสอบ
-mysql -u root -e "SHOW DATABASES;"
-mysql -u root CarCustomShop -e "SHOW TABLES;"
+mysql -u root -p -e "SHOW DATABASES;"
+mysql -u root -p CarCustomShop -e "SHOW TABLES;"
 ```
 
 ### MongoDB
 
 ```bash
-# สร้าง collection
-mongosh --eval "use CarCustomShop; db.createCollection('parts');"
+# เชื่อมต่อ
+mongosh
+
+# สร้าง database และ collection
+use CarCustomShop
+db.createCollection('parts')
+
+# ตรวจสอบ
+show databases
+show collections
+```
+
 
 # ตรวจสอบ
 mongosh --eval "show databases;"
@@ -384,19 +408,6 @@ rm -rf node_modules    # Mac/Linux
 
 # Reinstall
 npm install
-```
-
----
-
-### ❌ Docker ไม่เริ่มต้น
-
-**วิธีแก้:**
-
-1. เปิด Docker Desktop
-2. รัน:
-```bash
-docker-compose up -d
-docker-compose logs
 ```
 
 ---

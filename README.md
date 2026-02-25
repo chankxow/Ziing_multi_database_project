@@ -4,9 +4,9 @@
 
 This is a Full-Stack application for managing a car customization shop using modern technologies:
 - **Backend**: Flask (Python)
-- **Databases**: MySQL + MongoDB
+- **Databases**: MySQL + MongoDB (Localhost)
 - **Frontend**: React + TypeScript + Vite
-- **Infrastructure**: Docker + Docker Compose OR Local Development
+- **Infrastructure**: Local Development Only (No Docker)
 
 ### Purpose
 Manage customers, vehicles, parts, and work orders using databases optimized for each data type.
@@ -15,48 +15,43 @@ Manage customers, vehicles, parts, and work orders using databases optimized for
 
 ## 🚀 Quick Start
 
-### ✅ Option 1: Local Development (Recommended for Beginners)
+### ✅ Local Development Setup (Standalone)
 
 **Prerequisites:**
 - Python 3.8+
 - Node.js 16+
-- MySQL Server
-- MongoDB
+- MySQL Server (running on localhost:3306)
+- MongoDB (running on localhost:27017)
 
-**Windows:**
+### 📋 Setup Instructions
+
+**Step 1: Start Databases**
 ```bash
-start-local.bat
+# Make sure MySQL and MongoDB services are running
+# MySQL: localhost:3306
+# MongoDB: localhost:27017
 ```
 
-**Linux/Mac:**
+**Step 2: Start Backend**
 ```bash
-chmod +x start-local.sh
-./start-local.sh
+cd backend
+pip install -r requirements.txt
+python app.py
+# Backend runs on http://localhost:5000
 ```
 
-👉 **[See Local Setup Guide](LOCAL-SETUP.md)** for complete instructions
-
-### 🐳 Option 2: Docker Setup (For Containerized Environment)
-
-**Prerequisites:**
-- Docker Desktop installed
-- ~10GB free disk space
-
-**Windows:**
+**Step 3: Start Frontend**
 ```bash
-start.bat
-```
-
-**Linux/Mac:**
-```bash
-chmod +x start.sh
-./start.sh
+cd frontend
+npm install
+npm run dev
+# Frontend runs on http://localhost:5173
 ```
 
 ### Access Services
 - **Backend API**: http://localhost:5000
 - **Frontend**: http://localhost:5173
-- **MySQL**: localhost:3306 (local) or localhost:3307 (docker)
+- **MySQL**: localhost:3306
 - **MongoDB**: localhost:27017
 
 ---
@@ -71,10 +66,9 @@ Ziing_multi_database_project/
 │   ├── db_mysql.py            # MySQL connector
 │   ├── db_mongo.py            # MongoDB connector
 │   ├── requirements.txt        # Python dependencies
-│   ├── Dockerfile             # Docker build file
 │   ├── sql/                   # Database initialization scripts
 │   ├── .env                   # Environment variables (not tracked)
-│   └── .dockerignore          # Files to ignore in Docker build
+│   └── .env.example           # Example environment file
 │
 ├── frontend/                   # React + TypeScript + Vite
 │   ├── src/                   # React components
@@ -83,28 +77,27 @@ Ziing_multi_database_project/
 │   ├── package.json           # Node.js dependencies
 │   ├── vite.config.ts         # Vite configuration
 │   ├── tsconfig.json          # TypeScript configuration
-│   └── Dockerfile             # Docker build file
+│   └── .env                   # Environment variables
 │
-├── docker-compose.yml         # Docker orchestration file
+├── docker-compose.yml         # Docker configuration (reference only)
 ├── .gitignore                 # Git ignore rules
 ├── .env.example               # Example environment file
 ├── README.md                  # This file
-├── QUICKSTART.md              # Quick start guide
-├── start.bat                  # Startup script for Windows
-└── start.sh                   # Startup script for Linux/Mac
+└── Documentation.md           # Full documentation
+
 ```
 
 ---
 
 ## 🗄️ Databases
 
-### MySQL - Relational Data
+### MySQL - Relational Data (localhost:3306)
 Used for:
 - **Customers**: Personal information, contact details
 - **Vehicles**: Model, year, license plate
 - **WorkOrders**: Job details, status, cost
 
-### MongoDB - Flexible Data
+### MongoDB - Flexible Data (localhost:27017)
 Used for:
 - **Parts**: Part information, prices, inventory
 
@@ -238,4 +231,4 @@ If you have questions or issues:
 ---
 
 **Last Updated**: February 2026
-**Version**: 0.0.2B-T (Localhost Only)
+**Version**: 0.0.3B-T (Localhost Only)

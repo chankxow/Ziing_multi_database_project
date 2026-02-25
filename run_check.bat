@@ -1,5 +1,5 @@
 @echo off
-REM all-in-one-th.bat - ระบบตรวจสอบและรันโครงการแบบครบเครื่อง (ไทย)
+REM  - ระบบตรวจสอบและรันโครงการ
 REM ระบบรวม: ตรวจสอบระบบ, ทดสอบการติดตั้ง, ทดสอบฐานข้อมูล, ตรวจสอบการเชื่อมต่อ
 
 setlocal EnableDelayedExpansion
@@ -9,7 +9,7 @@ cls
 
 echo.
 echo ════════════════════════════════════════════════════════════════
-echo   Ziing Multi-Database Project - ระบบครบเครื่อง (ไทยแลน)
+echo   Ziing Multi-Database Project - ระบบครบเครื่อง 
 echo ════════════════════════════════════════════════════════════════
 echo.
 echo 1. ✓ ตรวจสอบระบบ (ตรวจสอบ Python/Node.js/MySQL/MongoDB)
@@ -17,28 +17,26 @@ echo 2. ✓ ทดสอบการติดตั้ง (test dependencies)
 echo 3. ✓ ตรวจสอบฐานข้อมูล (MySQL/MongoDB)
 echo 4. ✓ ตรวจสอบการเชื่อมต่อ (connection test)
 echo 5. ⚙️ ตั้งค่าการพัฒนาท้องถิ่น (Local Development)
-echo 6. 🐳 ตั้งค่า Docker
-echo 7. 💾 เตรียมฐานข้อมูล (Initialize Database)
-echo 8. 📖 ดูเอกสารประกอบ
-echo 9. 🚀 รันทั้งหมด (Local Setup + Database)
-echo 10. 🔃 รีสตาร์ท Services
-echo 11. ❌ ปิด Services
-echo 12. 🚪 ออก
+echo 6. � เตรียมฐานข้อมูล (Initialize Database)
+echo 7. 📖 ดูเอกสารประกอบ
+echo 8. 🚀 รันทั้งหมด (Local Setup + Database)
+echo 9. 🔃 รีสตาร์ท Services
+echo 10. ❌ ปิด Services
+echo 11. 🚪 ออก
 echo.
-set /p choice="เลือกตัวเลือก (1-12): "
+set /p choice="เลือกตัวเลือก (1-11): "
 
 if "%choice%"=="1" goto CHECK_SYSTEM
 if "%choice%"=="2" goto TEST_INSTALL
 if "%choice%"=="3" goto CHECK_DATABASE
 if "%choice%"=="4" goto CHECK_CONNECTION
 if "%choice%"=="5" goto LOCAL_SETUP
-if "%choice%"=="6" goto DOCKER_SETUP
-if "%choice%"=="7" goto INIT_DATABASE
-if "%choice%"=="8" goto VIEW_DOCS
-if "%choice%"=="9" goto FULL_SETUP
-if "%choice%"=="10" goto RESTART_SERVICES
-if "%choice%"=="11" goto STOP_SERVICES
-if "%choice%"=="12" goto END
+if "%choice%"=="6" goto INIT_DATABASE
+if "%choice%"=="7" goto VIEW_DOCS
+if "%choice%"=="8" goto FULL_SETUP
+if "%choice%"=="9" goto RESTART_SERVICES
+if "%choice%"=="10" goto STOP_SERVICES
+if "%choice%"=="11" goto END
 
 echo ❌ ตัวเลือกไม่ถูกต้อง
 pause
@@ -64,7 +62,8 @@ if %errorlevel% equ 0 (
   echo ✅ !py_ver!
   set /a check_pass+=1
 ) else (
-  echo ❌ Python ไม่พบ (ดาวน์โหลดจาก https://www.python.org/)
+  echo ❌ Python ไม่พบ
+  call :INSTALL_CONFIRM "Python" "https://www.python.org"
   set /a check_fail+=1
 )
 
@@ -76,7 +75,8 @@ if %errorlevel% equ 0 (
   echo ✅ Node.js !node_ver!
   set /a check_pass+=1
 ) else (
-  echo ❌ Node.js ไม่พบ (ดาวน์โหลดจาก https://nodejs.org/)
+  echo ❌ Node.js ไม่พบ
+  call :INSTALL_CONFIRM "Node.js" "https://nodejs.org"
   set /a check_fail+=1
 )
 
@@ -88,7 +88,8 @@ if %errorlevel% equ 0 (
   echo ✅ !mysql_ver!
   set /a check_pass+=1
 ) else (
-  echo ❌ MySQL ไม่พบ (ดาวน์โหลดที่ https://dev.mysql.com/downloads/mysql/)
+  echo ❌ MySQL ไม่พบ
+  call :INSTALL_CONFIRM "MySQL" "https://dev.mysql.com/downloads/mysql"
   set /a check_fail+=1
 )
 
@@ -100,7 +101,8 @@ if %errorlevel% equ 0 (
   echo ✅ !mongo_ver!
   set /a check_pass+=1
 ) else (
-  echo ❌ MongoDB/mongosh ไม่พบ (ดาวน์โหลดที่ https://www.mongodb.com/)
+  echo ❌ MongoDB/mongosh ไม่พบ
+  call :INSTALL_CONFIRM "MongoDB" "https://www.mongodb.com/try/download/community"
   set /a check_fail+=1
 )
 
@@ -120,28 +122,68 @@ echo   ✓ ทดสอบการติดตั้ง Dependencies
 echo ════════════════════════════════════════════════════════════════
 echo.
 
+setlocal EnableDelayedExpansion
+set test_pass=0
+set test_fail=0
+
 REM Test Python modules
 echo [1/3] ทดสอบ Python packages...
-python -c "import flask; print('✅ Flask OK')" 2>nul || echo "❌ Flask ไม่พบ"
-python -c "import pymysql; print('✅ PyMySQL OK')" 2>nul || echo "❌ PyMySQL ไม่พบ"
-python -c "import pymongo; print('✅ PyMongo OK')" 2>nul || echo "❌ PyMongo ไม่พบ"
+python -c "import flask" 2>nul
+if %errorlevel% equ 0 (
+  echo ✅ Flask OK
+  set /a test_pass+=1
+) else (
+  echo ❌ Flask ไม่พบ
+  call :INSTALL_PIP_PACKAGE "backend" "flask"
+  set /a test_fail+=1
+)
+
+python -c "import pymysql" 2>nul
+if %errorlevel% equ 0 (
+  echo ✅ PyMySQL OK
+  set /a test_pass+=1
+) else (
+  echo ❌ PyMySQL ไม่พบ
+  call :INSTALL_PIP_PACKAGE "backend" "pymysql"
+  set /a test_fail+=1
+)
+
+python -c "import pymongo" 2>nul
+if %errorlevel% equ 0 (
+  echo ✅ PyMongo OK
+  set /a test_pass+=1
+) else (
+  echo ❌ PyMongo ไม่พบ
+  call :INSTALL_PIP_PACKAGE "backend" "pymongo"
+  set /a test_fail+=1
+)
 
 REM Test npm packages
 echo [2/3] ตรวจสอบ frontend npm...
 if exist frontend\node_modules (
   echo ✅ Node modules มี
+  set /a test_pass+=1
 ) else (
-  echo ❌ Node modules ไม่มี (ต้องรัน npm install ก่อน)
+  echo ❌ Node modules ไม่มี
+  call :INSTALL_NPM_MODULES
+  set /a test_fail+=1
 )
 
 REM Test backend venv
 echo [3/3] ตรวจสอบ backend venv...
 if exist backend\venv (
   echo ✅ Virtual environment มี
+  set /a test_pass+=1
 ) else (
-  echo ❌ Virtual environment ไม่มี (ต้องสร้างก่อน)
+  echo ❌ Virtual environment ไม่มี
+  call :CREATE_VENV
+  set /a test_fail+=1
 )
 
+echo.
+echo ────────────────────────────────────────
+echo ผลสรุป: ✅ !test_pass! / ❌ !test_fail!
+echo ────────────────────────────────────────
 echo.
 pause
 goto START
@@ -231,7 +273,7 @@ pause
 goto START
 
 :LOCAL_SETUP
-cl cls
+cls
 echo.
 echo ════════════════════════════════════════════════════════════════
 echo   ⚙️ ตั้งค่าการพัฒนาท้องถิ่น
@@ -288,27 +330,6 @@ echo ✅ บริการกำลังเริ่มต้น
 pause
 goto START
 
-:DOCKER_SETUP
-cls
-echo.
-echo ════════════════════════════════════════════════════════════════
-echo   🐳 ตั้งค่า Docker
-echo ════════════════════════════════════════════════════════════════
-echo.
-
-docker --version >nul 2>&1 || (echo ❌ Docker ไม่พบ && pause && goto START)
-
-echo กำลังเริ่ม Docker services...
-docker-compose up -d
-echo.
-echo ✅ Docker services ทำงาน
-echo  - Backend: http://localhost:5000
-echo  - MySQL: localhost:3307
-echo  - MongoDB: localhost:27017
-echo.
-pause
-goto START
-
 :INIT_DATABASE
 cls
 echo.
@@ -348,10 +369,12 @@ echo   📖 เอกสารประกอบ
 echo ════════════════════════════════════════════════════════════════
 echo.
 
-if exist ALL_DOCUMENTATION_TH.md (
+if exist Documentation.md (
+  start "เอกสาร" notepad Documentation.md
+) else if exist ALL_DOCUMENTATION_TH.md (
   start "เอกสาร" notepad ALL_DOCUMENTATION_TH.md
 ) else (
-  echo ❌ ALL_DOCUMENTATION_TH.md ไม่พบ
+  echo ❌ ไม่พบเอกสาร (Documentation.md)
 )
 
 pause
@@ -366,6 +389,78 @@ echo ═════════════════════════
 echo.
 
 call :LOCAL_SETUP
+REM ════════════════════════════════════════════════════════════════
+REM   ฟังก์ชันสำหรับติดตั้งอัตโนมัติ
+REM ════════════════════════════════════════════════════════════════
+
+:INSTALL_CONFIRM
+echo.
+set /p install_confirm="๏ ต้องการติดตั้ง %~1 หรือไม่? (y/n): "
+if /i "%install_confirm%"=="y" (
+  echo 🔗 เปิดลิงค์ดาวน์โหลด: %~2
+  start "" %~2
+  echo ⏳ กรุณารอ 5 วินาที...
+  timeout /t 5
+  echo.
+  echo 📝 โปรดติดตั้ง %~1 แล้วเพิ่ม PATH หลังจากติดตั้งเสร็จแล้ว
+  echo 📝 จากนั้นรัน check system ใหม่
+  echo.
+) else (
+  echo ⏭️ ข้ามการติดตั้ง %~1
+)
+goto :eof
+
+:INSTALL_PIP_PACKAGE
+echo.
+set package=%~2
+set project_dir=%~1
+set /p pip_confirm="๏ ต้องการติดตั้ง %package% หรือไม่? (y/n): "
+if /i "%pip_confirm%"=="y" (
+  echo ⏳ กำลังติดตั้ง %package%...
+  cd %project_dir%
+  if exist venv (
+    call venv\Scripts\activate.bat
+    pip install %package%
+  ) else (
+    pip install %package%
+  )
+  cd ..
+  echo ✅ %package% ติดตั้งแล้ว
+) else (
+  echo ⏭️ ข้ามการติดตั้ง %package%
+)
+goto :eof
+
+:CREATE_VENV
+echo.
+set /p venv_confirm="๏ ต้องการสร้าง Virtual Environment หรือไม่? (y/n): "
+if /i "%venv_confirm%"=="y" (
+  echo ⏳ กำลังสร้าง venv...
+  cd backend
+  python -m venv venv
+  call venv\Scripts\activate.bat
+  pip install -q -r requirements.txt
+  cd ..
+  echo ✅ Virtual Environment สร้างแล้ว
+) else (
+  echo ⏭️ ข้ามการสร้าง venv
+)
+goto :eof
+
+:INSTALL_NPM_MODULES
+echo.
+set /p npm_confirm="๏ ต้องการติดตั้ง npm modules หรือไม่? (y/n): "
+if /i "%npm_confirm%"=="y" (
+  echo ⏳ กำลังติดตั้ง npm packages...
+  cd frontend
+  npm install --quiet --no-audit --no-fund
+  cd ..
+  echo ✅ npm modules ติดตั้งแล้ว
+) else (
+  echo ⏭️ ข้ามการติดตั้ง npm modules
+)
+goto :eof
+
 timeout /t 2 >nul
 call :INIT_DATABASE
 timeout /t 2 >nul
