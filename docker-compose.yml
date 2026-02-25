@@ -1,15 +1,15 @@
 version: '3.8'
 
 services:
-  # MySQL Database
+  # MySQL Database - Localhost Only
   mysql:
     image: mysql:8.0
     container_name: car_custom_mysql
     environment:
-      MYSQL_ROOT_PASSWORD: root_password
-      MYSQL_DATABASE: CarCustomShop
-      MYSQL_USER: shopuser
-      MYSQL_PASSWORD: shoppass
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_password}
+      MYSQL_DATABASE: ${MYSQL_DB:-CarCustomShop}
+      MYSQL_USER: ${MYSQL_USER:-shopuser}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-shoppass}
     ports:
       - "3307:3306"
     volumes:
@@ -22,15 +22,16 @@ services:
       timeout: 20s
       retries: 10
       interval: 10s
+    restart: unless-stopped
 
-  # MongoDB Database
+  # MongoDB Database - Localhost Only
   mongodb:
     image: mongo:7.0
     container_name: car_custom_mongodb
     environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: adminpass
-      MONGO_INITDB_DATABASE: CarCustomShop
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-adminpass}
+      MONGO_INITDB_DATABASE: ${MONGO_DB:-CarCustomShop}
     ports:
       - "27017:27017"
     volumes:
@@ -42,8 +43,9 @@ services:
       timeout: 20s
       retries: 10
       interval: 10s
+    restart: unless-stopped
 
-  # Flask Backend
+  # Flask Backend - Localhost Only
   backend:
     build:
       context: ./backend
@@ -55,17 +57,17 @@ services:
       mongodb:
         condition: service_healthy
     environment:
-      - FLASK_ENV=development
-      - FLASK_DEBUG=1
-      - FLASK_APP=app.py
+      - FLASK_ENV=${FLASK_ENV:-development}
+      - FLASK_DEBUG=${FLASK_DEBUG:-1}
+      - FLASK_APP=${FLASK_APP:-app.py}
       - MYSQL_HOST=mysql
       - MYSQL_PORT=3306
-      - MYSQL_USER=shopuser
-      - MYSQL_PASSWORD=shoppass
-      - MYSQL_DB=CarCustomShop
+      - MYSQL_USER=${MYSQL_USER:-shopuser}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-shoppass}
+      - MYSQL_DB=${MYSQL_DB:-CarCustomShop}
       - MONGO_HOST=mongodb
       - MONGO_PORT=27017
-      - MONGO_DB=CarCustomShop
+      - MONGO_DB=${MONGO_DB:-CarCustomShop}
     ports:
       - "5000:5000"
     volumes:
@@ -73,6 +75,7 @@ services:
     networks:
       - app_network
     command: flask run --host=0.0.0.0
+    restart: unless-stopped
 
   # Frontend (Optional - for development)
   # ⚠️ DISABLED by default - รัน npm run dev แยก locally สำหรับ hot reload ที่ดีกว่า

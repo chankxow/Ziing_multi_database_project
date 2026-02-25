@@ -1,135 +1,153 @@
-# 🚗 โปรเจกต์ร้านแต่งรถ - ระบบฐานข้อมูลหลายตัว
+# 🚗 Car Customization Project - Multi-Database System
 
-## ภาพรวมโปรเจกต์
+## Project Overview
 
-โปรเจกต์นี้เป็นแอปพลิเคชัน Full-Stack ที่รวมเทคโนโลยีสมัยใหม่เพื่อจัดการร้านแต่งรถ โดยใช้:
+This is a Full-Stack application for managing a car customization shop using modern technologies:
 - **Backend**: Flask (Python)
 - **Databases**: MySQL + MongoDB
 - **Frontend**: React + TypeScript + Vite
-- **Infrastructure**: Docker + Docker Compose
+- **Infrastructure**: Docker + Docker Compose OR Local Development
 
-### วัตถุประสงค์
-จัดการลูกค้า, ยานพาหนะ, ชิ้นส่วน, และคำสั่งงาน โดยใช้ฐานข้อมูลที่เหมาะสมสำหรับแต่ละประเภทข้อมูล
+### Purpose
+Manage customers, vehicles, parts, and work orders using databases optimized for each data type.
 
 ---
 
-## 🚀 เริ่มต้นอย่างรวดเร็ว
+## 🚀 Quick Start
 
-### ข้อกำหนดเบื้องต้น
-- Docker Desktop ติดตั้ง
-- Docker Compose ติดตั้ง
-- 10GB พื้นที่ว่างเพื่อสร้าง containers
+### ✅ Option 1: Local Development (Recommended for Beginners)
 
-### วิธีการใช้งาน
+**Prerequisites:**
+- Python 3.8+
+- Node.js 16+
+- MySQL Server
+- MongoDB
 
-#### Windows:
+**Windows:**
+```bash
+start-local.bat
+```
+
+**Linux/Mac:**
+```bash
+chmod +x start-local.sh
+./start-local.sh
+```
+
+👉 **[See Local Setup Guide](LOCAL-SETUP.md)** for complete instructions
+
+### 🐳 Option 2: Docker Setup (For Containerized Environment)
+
+**Prerequisites:**
+- Docker Desktop installed
+- ~10GB free disk space
+
+**Windows:**
 ```bash
 start.bat
 ```
 
-#### Linux / Mac:
+**Linux/Mac:**
 ```bash
 chmod +x start.sh
 ./start.sh
 ```
 
-### CONNECT
-- **API Backend**: http://localhost:5000
+### Access Services
+- **Backend API**: http://localhost:5000
 - **Frontend**: http://localhost:5173
-- **MySQL**: localhost:3306
+- **MySQL**: localhost:3306 (local) or localhost:3307 (docker)
 - **MongoDB**: localhost:27017
 
 ---
 
-## 📦 โครงสร้างโปรเจกต์
+## 📦 Project Structure
 
 ```
 Ziing_multi_database_project/
 ├── backend/                    # Flask Backend
-│   ├── app.py                 # ไฟล์หลักของแอปพลิเคชัน
-│   ├── config.py              # การกำหนดค่าสภาพแวดล้อม
-│   ├── db_mysql.py            # ตัวเชื่อมต่อ MySQL
-│   ├── db_mongo.py            # ตัวเชื่อมต่อ MongoDB
-│   ├── requirements.txt        # การพึ่งพา Python
-│   ├── Dockerfile             # คำสั่ง Docker สำหรับ Backend
-│   ├── sql/                   # สคริปต์การสร้างฐานข้อมูล
-│   ├── .env                   # ตัวแปรสภาพแวดล้อม (ไม่ track ด้วย git)
-│   └── .dockerignore          # ไฟล์ที่ละเว้นในการสร้าง Docker
+│   ├── app.py                 # Main application file
+│   ├── config.py              # Environment configuration
+│   ├── db_mysql.py            # MySQL connector
+│   ├── db_mongo.py            # MongoDB connector
+│   ├── requirements.txt        # Python dependencies
+│   ├── Dockerfile             # Docker build file
+│   ├── sql/                   # Database initialization scripts
+│   ├── .env                   # Environment variables (not tracked)
+│   └── .dockerignore          # Files to ignore in Docker build
 │
 ├── frontend/                   # React + TypeScript + Vite
-│   ├── src/                   # โค้ด React components
-│   ├── public/                # ไฟล์ static public
-│   ├── index.html             # หน้าหลัก HTML
-│   ├── package.json           # การพึ่งพา Node.js
-│   ├── vite.config.ts         # การกำหนดค่า Vite
-│   ├── tsconfig.json          # การกำหนดค่า TypeScript
-│   ├── Dockerfile             # คำสั่ง Docker สำหรับ Frontend
-│   └── .dockerignore          # ไฟล์ที่ละเว้นในการสร้าง Docker
+│   ├── src/                   # React components
+│   ├── public/                # Static files
+│   ├── index.html             # Main HTML file
+│   ├── package.json           # Node.js dependencies
+│   ├── vite.config.ts         # Vite configuration
+│   ├── tsconfig.json          # TypeScript configuration
+│   └── Dockerfile             # Docker build file
 │
-├── docker-compose.yml         # orchestration ไฟล์ Docker
-├── docker-compose.dev.yml     # เวอร์ชั่นสำหรับการพัฒนา
-├── .gitignore                 # กฎสำหรับ git
-├── .env.example               # ตัวอย่างไฟล์สภาพแวดล้อม
-├── DOCKER.md                  # เอกสารรายละเอียดเกี่ยวกับ Docker
-├── QUICKSTART.md              # คู่มือเริ่มต้นอย่างรวดเร็ว
-├── start.bat                  # สคริปต์เริ่มต้นสำหรับ Windows
-└── start.sh                   # สคริปต์เริ่มต้นสำหรับ Linux/Mac
+├── docker-compose.yml         # Docker orchestration file
+├── .gitignore                 # Git ignore rules
+├── .env.example               # Example environment file
+├── README.md                  # This file
+├── QUICKSTART.md              # Quick start guide
+├── start.bat                  # Startup script for Windows
+└── start.sh                   # Startup script for Linux/Mac
 ```
 
 ---
 
-## 🗄️ DATABASE
+## 🗄️ Databases
 
-### MySQL - ข้อมูลเชิงสัมพันธ์ [ตัวเทสเริ่มต้น]
-ใช้สำหรับเก็บข้อมูล:
-- **ลูกค้า** (Customer): ข้อมูลส่วนตัว, ติดต่อ
-- **ยานพาหนะ** (Vehicle): รุ่น, ปี, หมายเลขป้ายทะเบียน
-- **คำสั่งงาน** (WorkOrder): รายละเอียดงาน, สถานะ, ค่าใช้งาน
+### MySQL - Relational Data
+Used for:
+- **Customers**: Personal information, contact details
+- **Vehicles**: Model, year, license plate
+- **WorkOrders**: Job details, status, cost
 
-### MongoDB - ข้อมูลแบบยืดหยุ่น
-ใช้สำหรับเก็บข้อมูล:
-- **ชิ้นส่วน** (Parts): ข้อมูลชิ้นส่วนแต่งรถ, ราคา, จำนวน
+### MongoDB - Flexible Data
+Used for:
+- **Parts**: Part information, prices, inventory
 
 ---
 
-## 📡 API Endpoints [ตัวเทส]
+## 📡 API Endpoints
 
-| Method | Endpoint | รายละเอียด |
-|--------|----------|----------|
-| GET | `/` | ตรวจสอบสุขภาพเซิร์ฟเวอร์ |
-| GET | `/customers` | รับรายชื่อลูกค้าทั้งหมด |
-| POST | `/customers` | เพิ่มลูกค้าใหม่ |
-| GET | `/vehicles` | รับรายชื่อยานพาหนะทั้งหมด |
-| GET | `/workorders` | รับรายชื่อคำสั่งงานทั้งหมด |
-| GET | `/parts` | รับรายชื่อชิ้นส่วนทั้งหมด (MongoDB) |
-| POST | `/parts` | เพิ่มชิ้นส่วนใหม่ (MongoDB) |
+| Method | Endpoint | Description |
+|--------|----------|---|
+| GET | `/` | Server health check |
+| GET | `/customers` | Get all customers |
+| POST | `/customers` | Add new customer |
+| GET | `/vehicles` | Get all vehicles |
+| GET | `/workorders` | Get all work orders |
+| GET | `/parts` | Get all parts (MongoDB) |
+| POST | `/parts` | Add new part (MongoDB) |
 
 ---
 
 ## 🐳 Docker Commands
 
-### เริ่มต้นบริการ
+### Start Services
 ```bash
 docker-compose up -d
 ```
 
-### ดูสถานะบริการ
+### Check Service Status
 ```bash
 docker-compose ps
 ```
 
-### ดูบันทึก
+### View Logs
 ```bash
-# ทั้งหมด
+# All services
 docker-compose logs -f
 
-# เฉพาะบริการ
+# Specific service
 docker-compose logs -f backend
 docker-compose logs -f mysql
 docker-compose logs -f mongodb
 ```
 
-### เข้าถึง Database
+### Access Databases
 ```bash
 # MySQL
 docker-compose exec mysql mysql -u shopuser -pshoppass CarCustomShop
@@ -138,78 +156,71 @@ docker-compose exec mysql mysql -u shopuser -pshoppass CarCustomShop
 docker-compose exec mongodb mongosh admin --username admin --password adminpass
 ```
 
-### หยุดบริการ
+### Stop Services
 ```bash
-# หยุดทั้งหมด
+# Stop all
 docker-compose down
 
-# กำจัดข้อมูลทั้งหมด (เตือน: ลบฐานข้อมูล)
+# Remove all data (WARNING: deletes databases)
 docker-compose down -v
 ```
 
 ---
 
-## 🔧 การกำหนดค่า
+## 🔧 Configuration
 
-### ไฟล์ .env สำหรับจัดการพาสเวิส และ พอร์ตเชื่อมต่อต่างๆในเครื่อง
+### .env File for Environment Variables
 ```env
 # Flask Configuration
 FLASK_ENV=development
 FLASK_DEBUG=1
 FLASK_APP=app.py
 
-# MySQL Configuration
-MYSQL_HOST=mysql
-MYSQL_PORT=3306
+# MySQL Configuration (Localhost)
+MYSQL_HOST=localhost
+MYSQL_PORT=3307
 MYSQL_USER=shopuser
 MYSQL_PASSWORD=shoppass
 MYSQL_DB=CarCustomShop
 
-# MongoDB Configuration
-MONGO_HOST=mongodb
+# MongoDB Configuration (Localhost)
+MONGO_HOST=localhost
 MONGO_PORT=27017
 MONGO_DB=CarCustomShop
 ```
 
 ---
 
-## 📝 เอกสารเพิ่มเติม
+## 🔒 Security
 
-- **[DOCKER.md](DOCKER.md)** - เอกสารการตั้งค่า Docker โดยละเอียด, การแก้ไขปัญหา, การปรับใช้จริง
-- **[QUICKSTART.md](QUICKSTART.md)** - คู่มือเบิ้งต้นอย่างรวดเร็ว
-
----
-
-## 🔒 การรักษาความปลอดภัย
-
-- **ไม่แชร์ไฟล์ .env** ลงจาก Version Control
-- **เปลี่ยนรหัสผ่านผ่าน environment** ที่มี credentials
-- **ไม่บันทึกข้อมูลยืนยันตัวตน** ในโค้ด
-- ใช้ `.gitignore` เพื่อป้องกันไฟล์ที่มีความไว
+- **Do not share .env files** in version control
+- **Change passwords** in environment configuration
+- **Never hardcode credentials** in code
+- Use `.gitignore` to prevent sensitive files from being tracked
 
 ---
 
-## 🤝 การมีส่วนร่วม
+## 🤝 Contributing
 
-1. สร้าง feature branch: `git checkout -b feature/your-feature`
-2. Commit การเปลี่ยนแปลง: `git commit -m 'Add some feature'`
-3. Push ไป: `git push origin feature/your-feature`
-4. เปิด Pull Request
-
----
-
-## 👥 สมาชิกทีม
-
-- **ชื่อสมาชิก 1**: Dev:Chankxow
-- **ชื่อสมาชิก 2**: Dev:puriwat2953
-- **ชื่อสมาชิก 3**: Dev:Ampser
+1. Create a feature branch: `git checkout -b feature/your-feature`
+2. Commit changes: `git commit -m 'Add some feature'`
+3. Push to branch: `git push origin feature/your-feature`
+4. Open a Pull Request
 
 ---
 
-## 💡 สัญญาท้ายน้อย
+## 👥 Team Members
 
-โปรเจกต์นี้สร้างขึ้นสำหรับวัตถุประสงค์ด้านการศึกษา ใช้เพื่อเรียนรู้:
-- ความเข้าใจ Multi-Database System
+- **Chankxow**: Dev
+- **puriwat2953**: Dev
+- **Ampser**: Dev
+
+---
+
+## 💡 Note
+
+This project was created for educational purposes to understand:
+- Multi-Database Systems
 - Docker & Container Technology
 - Full-Stack Development
 - Python Flask Framework
@@ -217,14 +228,14 @@ MONGO_DB=CarCustomShop
 
 ---
 
-## 📞 ติดต่อและสนับสนุน
+## 📞 Support
 
-หากมีคำถามหรือปัญหา:
-1. ตรวจสอบ [DOCKER.md](DOCKER.md) สำหรับการแก้ไขปัญหา
-2. ติดต่อ DISCORD
-3. สร้าง Issue และอธิบายปัญหาโดยละเอียด
+If you have questions or issues:
+1. Check the Docker logs with `docker-compose logs -f`
+2. Verify all services are running with `docker-compose ps`
+3. Create an issue with detailed description
 
 ---
 
-**จัดทำครั้งล่าสุด**: เดือนกุมภาพันธ์ 2026
-**เวอร์ชั่น**: 0.0.2B-T
+**Last Updated**: February 2026
+**Version**: 0.0.2B-T (Localhost Only)
