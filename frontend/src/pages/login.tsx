@@ -1,12 +1,46 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log({ username, password });
+    setError(null);
+    setLoading(true);
+
+    try {
+      const res = await fetch("http://localhost:5000/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data?.error || "Login failed");
+        return;
+      }
+
+      localStorage.setItem("access_token", data.access_token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+
+      const role = data?.user?.role;
+      if (role === "admin") navigate("/admin/dashboard");
+      else if (role === "mechanic") navigate("/admin/dashboard");
+      else if (role === "customer") navigate("/vehicle/dashboard");
+      else if (role === "supplier") navigate("/admin/dashboard");
+      else navigate("/admin/dashboard");
+    } catch (err: any) {
+      setError(err?.message || "Login failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -28,6 +62,11 @@ export default function Login() {
         </div>
 
         <form onSubmit={handleLogin} className="space-y-5">
+          {error && (
+            <div className="rounded-xl border border-red-600/50 bg-red-600/10 px-4 py-3 text-sm text-red-300">
+              {error}
+            </div>
+          )}
 
           <div>
             <label className="block text-sm text-zinc-400 mb-1">
@@ -59,9 +98,10 @@ export default function Login() {
 
           <button
             type="submit"
-            className="w-full py-3 bg-gradient-to-r from-red-600 to-orange-500 text-white font-bold rounded-xl shadow-lg hover:scale-[1.02] active:scale-95 transition-transform duration-200"
+            disabled={loading}
+            className="w-full py-3 bg-gradient-to-r from-red-600 to-orange-500 text-white font-bold rounded-xl shadow-lg hover:scale-[1.02] active:scale-95 transition-transform duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            START ENGINE
+            {loading ? "CONNECTING..." : "START ENGINE"}
           </button>
         </form>
 
