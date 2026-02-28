@@ -4,6 +4,8 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Login from './components/Login';
 import Register from './components/Register';
 import Dashboard from './components/Dashboard';
+import PasswordTest from './components/PasswordTest';
+import AuthTestSimple from './components/AuthTestSimple';
 import './App.css';
 
 function App() {
@@ -14,6 +16,8 @@ function App() {
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/password-test" element={<PasswordTest />} />
+            <Route path="/auth-test-simple" element={<AuthTestSimple />} />
             <Route
               path="/dashboard"
               element={
@@ -22,7 +26,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/" element={<Navigate to="/auth-test-simple" replace />} />
           </Routes>
         </div>
       </Router>
