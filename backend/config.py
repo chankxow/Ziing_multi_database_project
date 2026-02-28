@@ -25,6 +25,11 @@ MONGO_URI = f"mongodb://{MONGO_HOST}:{MONGO_PORT}/"
 FLASK_ENV = os.getenv("FLASK_ENV", "development")
 DEBUG = FLASK_ENV == "development"
 
+# JWT Configuration
+JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "your-secret-key-change-in-production")
+JWT_ALGORITHM = "HS256"
+JWT_EXPIRATION_HOURS = int(os.getenv("JWT_EXPIRATION_HOURS", 24))
+
 # Retry Configuration (สำหรับการพยายามเชื่อมต่อฐานข้อมูล)
 DB_RETRY_ATTEMPTS = int(os.getenv("DB_RETRY_ATTEMPTS", 5))
 DB_RETRY_DELAY = int(os.getenv("DB_RETRY_DELAY", 1))

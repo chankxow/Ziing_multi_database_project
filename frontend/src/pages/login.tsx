@@ -1,28 +1,28 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
-  e.preventDefault();
-  try {
-    const res = await fetch("http://localhost:5000/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password })
-    });
-    const data = await res.json();
-    if (res.ok) {
-      alert(`ยินดีต้อนรับ ${data.user.username}!`);
-      // TODO: เก็บ token/user แล้ว redirect ไปหน้า dashboard
-    } else {
-      alert(data.error);
+    e.preventDefault();
+    setIsLoading(true);
+    
+    const success = await login(username, password);
+    
+    if (success) {
+      // Redirect ไปหน้า dashboard ตาม role
+      navigate("/dashboard");
     }
-  } catch (err) {
-    alert("เกิดข้อผิดพลาด: " + err);
-  }
-};
+    
+    setIsLoading(false);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black flex items-center justify-center relative overflow-hidden">
@@ -55,6 +55,7 @@ export default function Login() {
               onChange={(e) => setUsername(e.target.value)}
               className="w-full px-4 py-3 bg-black/60 border border-zinc-700 rounded-xl text-white focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition"
               required
+              disabled={isLoading}
             />
           </div>
 
@@ -69,14 +70,16 @@ export default function Login() {
               onChange={(e) => setPassword(e.target.value)}
               className="w-full px-4 py-3 bg-black/60 border border-zinc-700 rounded-xl text-white focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition"
               required
+              disabled={isLoading}
             />
           </div>
 
           <button
             type="submit"
-            className="w-full py-3 bg-gradient-to-r from-red-600 to-orange-500 text-white font-bold rounded-xl shadow-lg hover:scale-[1.02] active:scale-95 transition-transform duration-200"
+            disabled={isLoading}
+            className="w-full py-3 bg-gradient-to-r from-red-600 to-orange-500 text-white font-bold rounded-xl shadow-lg hover:scale-[1.02] active:scale-95 transition-transform duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            START ENGINE
+            {isLoading ? "STARTING ENGINE..." : "START ENGINE"}
           </button>
         </form>
 
