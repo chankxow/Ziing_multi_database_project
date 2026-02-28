@@ -15,21 +15,39 @@ export default function RacingRegister() {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    if (form.password !== form.confirmPassword) {
-      alert("Password ไม่ตรงกัน");
-      return;
+  if (form.password !== form.confirmPassword) {
+    alert("Password ไม่ตรงกัน");
+    return;
+  }
+
+  try {
+    const res = await fetch("http://127.0.0.1:8000/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username: form.username,
+        phone: form.phone,
+        password: form.password,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      alert("สมัครสมาชิกสำเร็จ");
+      window.location.href = "/";
+    } else {
+      alert(data.detail || "Register failed");
     }
-
-    if (!/^0[0-9]{9}$/.test(form.phone)) {
-      alert("กรุณากรอกเบอร์โทรให้ถูกต้อง");
-      return;
-    }
-
-    console.log(form);
-  };
+  } catch {
+    alert("Server error");
+  }
+};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black flex items-center justify-center relative overflow-hidden">

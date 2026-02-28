@@ -4,10 +4,33 @@ export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log({ username, password });
-  };
+  const handleLogin = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  try {
+    const res = await fetch("http://127.0.0.1:8000/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username,
+        password,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      alert("Login success!");
+      window.location.href = "/dashboard";
+    } else {
+      alert(data.detail || "Login failed");
+    }
+  } catch (err) {
+    alert("Server error");
+  }
+};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black flex items-center justify-center relative overflow-hidden">
