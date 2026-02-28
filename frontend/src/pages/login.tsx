@@ -1,33 +1,44 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
-  e.preventDefault();
-  try {
-    const res = await fetch("http://localhost:5000/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password })
-    });
-    const data = await res.json();
-    if (res.ok) {
-      alert(`ยินดีต้อนรับ ${data.user.username}!`);
-      // TODO: เก็บ token/user แล้ว redirect ไปหน้า dashboard
-    } else {
-      alert(data.error);
+    e.preventDefault();
+
+    try {
+      const res = await fetch("http://localhost:5000/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        // ✅ เก็บ user หรือ token (ถ้ามี) ไว้
+        localStorage.setItem("user", JSON.stringify(data.user));
+        if (data.token) {
+          localStorage.setItem("token", data.token);
+        }
+
+        // 🚀 ไปหน้า Dashboard
+        navigate("/dashboard"); // ถ้า Dashboard คือ path "/"
+      } else {
+        alert(data.error || "Login failed");
+      }
+    } catch (err) {
+      alert("เกิดข้อผิดพลาด: " + err);
     }
-  } catch (err) {
-    alert("เกิดข้อผิดพลาด: " + err);
-  }
-};
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black flex items-center justify-center relative overflow-hidden">
 
-      {/* Glow Effect */}
+      {/* Glow Effects */}
       <div className="absolute w-[500px] h-[500px] bg-red-600 rounded-full blur-[180px] opacity-30 top-[-100px] left-[-100px]" />
       <div className="absolute w-[400px] h-[400px] bg-orange-500 rounded-full blur-[150px] opacity-20 bottom-[-100px] right-[-100px]" />
 
