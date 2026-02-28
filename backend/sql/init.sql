@@ -1,6 +1,15 @@
 -- Sample initialization SQL for CarCustomShop Database
 -- This file will be executed automatically when MySQL container starts
 
+-- Create Users table for authentication
+CREATE TABLE IF NOT EXISTS Users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    email VARCHAR(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Create Customer table
 CREATE TABLE IF NOT EXISTS Customer (
     CustomerID INT AUTO_INCREMENT PRIMARY KEY,
