@@ -94,6 +94,36 @@ def get_workorders():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# POST /login
+@app.route("/login", methods=["POST"])
+def login():
+    body = request.json
+    # ค้น User จาก Username และเช็ค PasswordHash (ตอนนียัง plain text ไปก่อน)
+    user = query("SELECT * FROM User WHERE Username = %s", (body["username"],))
+    if not user or user[0]["PasswordHash"] != body["password"]:
+        return jsonify({"error": "Invalid credentials"}), 401
+    return jsonify({"user": {"username": user[0]["Username"], "role": user[0]["RoleID"]}})
+
+# POST /register
+# POST /register
+@app.route("/register", methods=["POST"])
+def register():
+    try:
+        body = request.json
+        # ตรวจสอบว่า username ซ้ำไหม
+        existing = query("SELECT UserID FROM User WHERE Username = %s", (body["username"],))
+        if existing:
+            return jsonify({"error": "Username already exists"}), 400
+        
+        # สร้างผู้ใช้ใหม่ (ตอนนี้เก็บ password เป็น plain text ก่อน)
+        execute(
+            "INSERT INTO User (Username, PasswordHash, FirstName, LastName, RoleID) VALUES (%s, %s, %s, %s, %s)",
+            (body["username"], body["password"], body.get("firstName", ""), body.get("lastName", ""), 3)  # RoleID=3 = Receptionist
+        )
+        return jsonify({"status": "registered", "username": body["username"]})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 # =========================
 # Error Handling
 # =========================

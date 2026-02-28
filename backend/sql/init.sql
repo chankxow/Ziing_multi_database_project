@@ -1,174 +1,88 @@
--- ==========================================
--- CarCustomShop Database Initialization
--- Improved Version (SQL + Constraints)
--- ==========================================
-
-DROP DATABASE IF EXISTS CarCustomShop;
 CREATE DATABASE CarCustomShop;
 USE CarCustomShop;
+-- 1. Create Role table
+CREATE TABLE IF NOT EXISTS Role (
+    RoleID INT AUTO_INCREMENT PRIMARY KEY,
+    RoleName VARCHAR(50) NOT NULL UNIQUE
+);
+
+-- 2. Create User table (Staff/Employees)
+CREATE TABLE IF NOT EXISTS User (
+    UserID INT AUTO_INCREMENT PRIMARY KEY,
+    Username VARCHAR(50) NOT NULL UNIQUE,
+    PasswordHash VARCHAR(255) NOT NULL,
+    FirstName VARCHAR(50) NOT NULL,
+    LastName VARCHAR(50) NOT NULL,
+    RoleID INT NOT NULL,
+    IsActive BOOLEAN DEFAULT TRUE,
+    CreatedDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (RoleID) REFERENCES Role(RoleID)
+);
+
+-- 3. Create Customer table
+CREATE TABLE IF NOT EXISTS Customer (
+    CustomerID INT AUTO_INCREMENT PRIMARY KEY,
+    FirstName VARCHAR(50) NOT NULL,
+    LastName VARCHAR(50) NOT NULL,
+    Phone VARCHAR(20),
+    Email VARCHAR(100),
+    CreatedDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 4. Create Vehicle table
+CREATE TABLE IF NOT EXISTS Vehicle (
+    VehicleID INT AUTO_INCREMENT PRIMARY KEY,
+    CustomerID INT NOT NULL,
+    Make VARCHAR(50),
+    Model VARCHAR(50),
+    Year INT,
+    Color VARCHAR(30),
+    LicensePlate VARCHAR(20) UNIQUE,
+    CreatedDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (CustomerID) REFERENCES Customer(CustomerID)
+);
+
+-- 5. Create WorkOrder table (Modified to include UserID)
+CREATE TABLE IF NOT EXISTS WorkOrder (
+    WorkOrderID INT AUTO_INCREMENT PRIMARY KEY,
+    VehicleID INT NOT NULL,
+    UserID INT NOT NULL, -- Tracks which employee created/owns this work order
+    Description TEXT,
+    Status VARCHAR(20) DEFAULT 'Pending',
+    TotalCost DECIMAL(10, 2),
+    CreatedDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CompletedDate TIMESTAMP NULL,
+    FOREIGN KEY (VehicleID) REFERENCES Vehicle(VehicleID),
+    FOREIGN KEY (UserID) REFERENCES User(UserID)
+);
 
 -- ==========================================
--- Customer
--- ==========================================
-CREATE TABLE Customer (
-  CustomerID INT PRIMARY KEY AUTO_INCREMENT,
-  FirstName VARCHAR(100) NOT NULL,
-  LastName VARCHAR(100) NOT NULL,
-  Phone VARCHAR(20) NOT NULL UNIQUE,
-  Email VARCHAR(100) NOT NULL UNIQUE,
-  Address TEXT,
-  CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
-) ;
-
--- ==========================================
--- Brands
--- ==========================================
-CREATE TABLE Brands (
-  TypeID INT PRIMARY KEY AUTO_INCREMENT,
-  TypeName VARCHAR(50) NOT NULL UNIQUE
-) ;
-
--- ==========================================
--- Vehicle
--- ==========================================
-CREATE TABLE Vehicle (
-  VehicleID INT PRIMARY KEY AUTO_INCREMENT,
-  CustomerID INT NOT NULL,
-  TypeID INT NULL,
-  Model VARCHAR(100) NOT NULL,
-  Year INT NOT NULL CHECK (Year >= 1950),
-  LicensePlate VARCHAR(20) NOT NULL UNIQUE,
-  
-  FOREIGN KEY (CustomerID) REFERENCES Customer(CustomerID) 
-      ON DELETE CASCADE,
-  FOREIGN KEY (TypeID) REFERENCES Brands(TypeID) 
-      ON DELETE SET NULL
-) ;
-
--- ==========================================
--- Employee
--- ==========================================
-CREATE TABLE Employee (
-  EmployeeID INT PRIMARY KEY AUTO_INCREMENT,
-  FirstName VARCHAR(100) NOT NULL,
-  LastName VARCHAR(100) NOT NULL,
-  Position VARCHAR(50) NOT NULL,
-  Phone VARCHAR(20) UNIQUE,
-  HireDate DATE NOT NULL,
-  Salary DECIMAL(10,2) NOT NULL CHECK (Salary >= 0),
-  IsActive TINYINT(1) DEFAULT 1
-) ;
-
--- ==========================================
--- Service
--- ==========================================
-CREATE TABLE Service (
-  ServiceID INT PRIMARY KEY AUTO_INCREMENT,
-  ServiceName VARCHAR(100) NOT NULL UNIQUE,
-  ServicePrice DECIMAL(10,2) NOT NULL CHECK (ServicePrice >= 0),
-  IsActive TINYINT(1) DEFAULT 1
-) ;
-
--- ==========================================
--- Part (SQL Side - Inventory Control)
--- ==========================================
-CREATE TABLE Part (
-  PartID INT PRIMARY KEY AUTO_INCREMENT,
-  PartName VARCHAR(100) NOT NULL UNIQUE,
-  Cost DECIMAL(10,2) NOT NULL CHECK (Cost >= 0),
-  StockQty INT NOT NULL DEFAULT 0 CHECK (StockQty >= 0)
-) ;
-
--- ==========================================
--- WorkOrder
--- ==========================================
-CREATE TABLE WorkOrder (
-  WorkOrderID INT PRIMARY KEY AUTO_INCREMENT,
-  VehicleID INT NOT NULL,
-  WorkDate DATE NOT NULL DEFAULT (CURRENT_DATE),
-  Status ENUM('Pending','In Progress','Completed','Cancelled') 
-         DEFAULT 'Pending',
-  Notes TEXT,
-  
-  FOREIGN KEY (VehicleID) REFERENCES Vehicle(VehicleID) 
-      ON DELETE CASCADE
-) ;
-
--- ==========================================
--- WorkOrderEmployee (Many-to-Many)
--- ==========================================
-CREATE TABLE WorkOrderEmployee (
-  ID INT PRIMARY KEY AUTO_INCREMENT,
-  WorkOrderID INT NOT NULL,
-  EmployeeID INT NOT NULL,
-  
-  FOREIGN KEY (WorkOrderID) REFERENCES WorkOrder(WorkOrderID) 
-      ON DELETE CASCADE,
-  FOREIGN KEY (EmployeeID) REFERENCES Employee(EmployeeID) 
-      ON DELETE CASCADE
-) ;
-
--- ==========================================
--- WorkOrderDetail
--- ==========================================
-CREATE TABLE WorkOrderDetail (
-  DetailID INT PRIMARY KEY AUTO_INCREMENT,
-  WorkOrderID INT NOT NULL,
-  ServiceID INT NULL,
-  PartID INT NULL,
-  Quantity INT NOT NULL CHECK (Quantity > 0),
-  UnitPrice DECIMAL(10,2) NOT NULL CHECK (UnitPrice >= 0),
-
-  FOREIGN KEY (WorkOrderID) REFERENCES WorkOrder(WorkOrderID) 
-      ON DELETE CASCADE,
-  FOREIGN KEY (ServiceID) REFERENCES Service(ServiceID) 
-      ON DELETE SET NULL,
-  FOREIGN KEY (PartID) REFERENCES Part(PartID) 
-      ON DELETE SET NULL
-) ;
-
--- ==========================================
--- Invoice
--- ==========================================
-CREATE TABLE Invoice (
-  InvoiceID INT PRIMARY KEY AUTO_INCREMENT,
-  WorkOrderID INT NOT NULL UNIQUE,
-  InvoiceDate DATE NOT NULL DEFAULT (CURRENT_DATE),
-  Subtotal DECIMAL(10,2) NOT NULL CHECK (Subtotal >= 0),
-  Tax DECIMAL(10,2) NOT NULL DEFAULT 0 CHECK (Tax >= 0),
-  Discount DECIMAL(10,2) NOT NULL DEFAULT 0 CHECK (Discount >= 0),
-  TotalAmount DECIMAL(10,2) NOT NULL CHECK (TotalAmount >= 0),
-  Status ENUM('Unpaid','Paid','Refunded') DEFAULT 'Unpaid',
-
-  FOREIGN KEY (WorkOrderID) REFERENCES WorkOrder(WorkOrderID) 
-      ON DELETE CASCADE
-) ;
-
--- ==========================================
--- Payment
--- ==========================================
-CREATE TABLE Payment (
-  PaymentID INT PRIMARY KEY AUTO_INCREMENT,
-  InvoiceID INT NOT NULL,
-  PaymentDate DATE NOT NULL DEFAULT (CURRENT_DATE),
-  Amount DECIMAL(10,2) NOT NULL CHECK (Amount > 0),
-  PaymentMethod ENUM('Cash','Credit Card','Bank Transfer','QR Code') NOT NULL,
-
-  FOREIGN KEY (InvoiceID) REFERENCES Invoice(InvoiceID) 
-      ON DELETE CASCADE
-) ;
-
--- ==========================================
--- Sample Data
+-- Insert sample data
 -- ==========================================
 
-INSERT INTO Brands (TypeName) VALUES 
-('Toyota'), ('Honda'), ('BMW');
+-- Insert Roles
+INSERT INTO Role (RoleName) VALUES 
+('Admin'),
+('Mechanic'),
+('Receptionist');
 
-INSERT INTO Customer (FirstName, LastName, Phone, Email, Address) VALUES
-('Ammy', 'Ster', '0800000000', 'ammy@email.com', 'Bangkok'),
-('Phu', 'Doe', '0811111111', 'd@email.com', 'Bangkok');
+-- Insert Users (Passwords should be hashed in production, e.g., bcrypt)
+INSERT INTO User (Username, PasswordHash, FirstName, LastName, RoleID) VALUES 
+('admin_ton', 'hashed_pass_1', 'Ton', 'Manager', 1),
+('mech_boy', 'hashed_pass_2', 'Boy', 'Fixer', 2),
+('rec_jane', 'hashed_pass_3', 'Jane', 'Smile', 3);
 
-INSERT INTO Vehicle (CustomerID, TypeID, Model, Year, LicensePlate) VALUES
-(1, 1, 'Supra', 2022, 'AAA-111'),
-(2, 2, 'Civic', 2021, 'BBB-222');
+-- Insert Customers
+INSERT INTO Customer (FirstName, LastName, Phone, Email) VALUES 
+('John', 'Doe', '0801234567', 'john@example.com'),
+('Jane', 'Smith', '0809876543', 'jane@example.com');
+
+-- Insert Vehicles
+INSERT INTO Vehicle (CustomerID, Make, Model, Year, Color, LicensePlate) VALUES 
+(1, 'Toyota', 'Camry', 2022, 'Black', 'ABC-1234'),
+(2, 'Honda', 'Accord', 2021, 'Silver', 'XYZ-9876');
+
+-- Insert WorkOrders
+INSERT INTO WorkOrder (VehicleID, UserID, Description, Status, TotalCost) VALUES 
+(1, 3, 'เปลี่ยนถ่ายน้ำมันเครื่องและเช็คระยะ', 'Completed', 2500.00),
+(2, 2, 'ติดตั้งชุดแต่งสเกิร์ตรอบคัน', 'In Progress', 15000.00);
