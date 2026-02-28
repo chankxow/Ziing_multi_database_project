@@ -15,7 +15,7 @@ export default function RacingRegister() {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (form.password !== form.confirmPassword) {
@@ -28,12 +28,32 @@ export default function RacingRegister() {
       return;
     }
 
-    console.log(form);
+    try {
+      const res = await fetch("http://localhost:5000/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: form.username,
+          password: form.password,
+          firstName: form.username, // ใช้ username แทนชื่อจริงชั่วคราว
+          lastName: "User"
+        })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert("สมัครสมาชิกสำเร็จ! กรุณาล็อกอิน");
+        window.location.href = "/"; // ไปหน้า login
+      } else {
+        alert(data.error);
+      }
+    } catch (err) {
+      alert("เกิดข้อผิดพลาด: " + err);
+    }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black flex items-center justify-center relative overflow-hidden">
-      
+
       {/* Glow Background */}
       <div className="absolute w-[500px] h-[500px] bg-red-600 rounded-full blur-[180px] opacity-30 top-[-120px] left-[-120px]" />
       <div className="absolute w-[400px] h-[400px] bg-orange-500 rounded-full blur-[150px] opacity-20 bottom-[-100px] right-[-100px]" />

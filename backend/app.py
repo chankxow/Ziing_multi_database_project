@@ -105,7 +105,6 @@ def login():
     return jsonify({"user": {"username": user[0]["Username"], "role": user[0]["RoleID"]}})
 
 # POST /register
-# POST /register
 @app.route("/register", methods=["POST"])
 def register():
     try:
