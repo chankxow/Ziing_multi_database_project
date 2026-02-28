@@ -39,6 +39,11 @@ def ensure_connection():
     global conn
     if conn is None:
         conn = get_connection()
+    else:
+        try:
+            conn.ping(reconnect=True)
+        except:
+            conn = get_connection()
     return conn
 
 def query(sql, params=None):
