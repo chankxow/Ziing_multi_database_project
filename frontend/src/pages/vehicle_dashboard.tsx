@@ -1,5 +1,5 @@
 import { useState } from "react";
-import VehicleDetail from "./VehicleDetail";
+import VehicleDetail from "./detailed/VehicleDetail";
 
 interface Vehicle {
   id: number;
