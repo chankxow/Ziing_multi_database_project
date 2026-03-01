@@ -7,7 +7,7 @@ MONGO_URI = "mongodb://localhost:27017/"
 MONGO_DB = "CarCustomShop"
 
 # JWT Configuration
-JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "your-secret-key-change-in-production")
+JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "testsecretkey")
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRATION_HOURS = int(os.getenv("JWT_EXPIRATION_HOURS", 24))
 // change this file to your password and change file name to "config.py"
