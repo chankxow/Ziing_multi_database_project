@@ -169,16 +169,42 @@ def login():
     
     try:
         # ค้น User จาก Username
+        print(f"DEBUG: Searching for user: {body['username']}")
         user = query("SELECT * FROM User WHERE Username = %s", (body["username"],))
+        print(f"DEBUG: User found: {len(user) if user else 0}")
         
         if not user:
+            print("DEBUG: User not found")
             return jsonify({"error": "Invalid credentials"}), 401
             
         user_data = user[0]
+        print(f"DEBUG: User data keys: {list(user_data.keys())}")
+        print(f"DEBUG: User role: {user_data.get('RoleID')}")
         
         # ตรวจสอบ password ด้วย bcrypt
-        if not bcrypt.checkpw(body["password"].encode('utf-8'), user_data["PasswordHash"].encode('utf-8')):
-            return jsonify({"error": "Invalid credentials"}), 401
+        password_bytes = body["password"].encode('utf-8')
+        stored_hash = user_data["PasswordHash"]
+        print(f"DEBUG: Stored hash type: {type(stored_hash)}")
+        
+        # ถ้าเก็บเป็น string ใน DB ให้แปลงเป็น bytes
+        if isinstance(stored_hash, str):
+            stored_hash = stored_hash.encode('utf-8')
+        
+        print("DEBUG: Checking password...")
+        try:
+            # Debug: แสดง hash ที่ได้จาก DB
+            print(f"DEBUG: Original hash from DB: '{stored_hash}'")
+            print(f"DEBUG: Hash bytes: {stored_hash}")
+            print(f"DEBUG: Hash repr: {repr(stored_hash)}")
+            
+            if not bcrypt.checkpw(password_bytes, stored_hash):
+                print("DEBUG: Password check failed")
+                return jsonify({"error": "Invalid credentials"}), 401
+            print("DEBUG: Password check passed")
+        except Exception as bcrypt_error:
+            print(f"DEBUG: Bcrypt error: {str(bcrypt_error)}")
+            print(f"DEBUG: Error type: {type(bcrypt_error)}")
+            return jsonify({"error": "Password verification failed"}), 500
         
         # สร้าง JWT token
         token_payload = {
@@ -214,12 +240,21 @@ def register():
         
         # Hash password ด้วย bcrypt
         hashed_password = bcrypt.hashpw(body["password"].encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-
+        print(f"DEBUG: Generated hash: {hashed_password}")
+        print(f"DEBUG: Hash length: {len(hashed_password)}")
+        
         # สร้างผู้ใช้ใหม่พร้อม password ที่ hash แล้ว
         execute(
             "INSERT INTO User (Username, PasswordHash, FirstName, LastName, RoleID) VALUES (%s, %s, %s, %s, %s)",
             (body["username"], hashed_password, body.get("firstName", ""), body.get("lastName", ""), 3)  # RoleID=3 = Receptionist
         )
+        
+        # ตรวจสอบว่า hash ถูกเก็บไว้เต็มๆ หรือไม่
+        saved_user = query("SELECT PasswordHash, LENGTH(PasswordHash) FROM User WHERE Username = %s", (body["username"],))
+        if saved_user:
+            print(f"DEBUG: Saved hash: {saved_user[0]['PasswordHash']}")
+            print(f"DEBUG: Saved hash length: {saved_user[0]['LENGTH(PasswordHash)']}")
+        
         return jsonify({"status": "registered", "username": body["username"]})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
