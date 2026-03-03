@@ -16,40 +16,42 @@ export default function RacingRegister() {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (form.password !== form.confirmPassword) {
-      alert("Password ไม่ตรงกัน");
-      return;
-    }
+  if (form.password !== form.confirmPassword) {
+    alert("Password ไม่ตรงกัน");
+    return;
+  }
 
-    if (!/^0[0-9]{9}$/.test(form.phone)) {
-      alert("กรุณากรอกเบอร์โทรให้ถูกต้อง");
-      return;
-    }
+  if (!/^0[0-9]{9}$/.test(form.phone)) {
+    alert("กรุณากรอกเบอร์โทรให้ถูกต้อง");
+    return;
+  }
 
-    try {
-      const res = await fetch("http://localhost:5000/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: form.username,
-          password: form.password,
-          firstName: form.username, // ใช้ username แทนชื่อจริงชั่วคราว
-          lastName: "User"
-        })
-      });
-      const data = await res.json();
-      if (res.ok) {
-        alert("สมัครสมาชิกสำเร็จ! กรุณาล็อกอิน");
-        window.location.href = "/"; // ไปหน้า login
-      } else {
-        alert(data.error);
-      }
-    } catch (err) {
-      alert("เกิดข้อผิดพลาด: " + err);
+  try {
+    // ✅ เปลี่ยนจาก /register → /register/customer
+    const res = await fetch("http://localhost:5000/register/customer", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username:  form.username,
+        password:  form.password,
+        firstName: form.username,  // หรือเพิ่ม field firstName/lastName ใน form ก็ได้
+        lastName:  "User",
+        phone:     form.phone,     // ✅ ส่ง phone ด้วย
+      })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      alert("สมัครสมาชิกสำเร็จ! กรุณาล็อกอิน");
+      window.location.href = "/";
+    } else {
+      alert(data.error);
     }
-  };
+  } catch (err) {
+    alert("เกิดข้อผิดพลาด: " + err);
+  }
+};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black flex items-center justify-center relative overflow-hidden">

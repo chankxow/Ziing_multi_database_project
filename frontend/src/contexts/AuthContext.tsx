@@ -1,92 +1,95 @@
-import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
-interface User {
-  user_id: number;
-  username: string;
-  role: number; // 1=Admin, 2=Staff, 3=Customer
+import { createContext, useContext, useState, useEffect } from "react";
+import type { ReactNode } from "react";
+
+export interface AuthUser {
+  user_id:     number;
+  username:    string;
+  role:        number;
+  role_name:   string;
+  customer_id: number | null;
 }
 
 interface AuthContextType {
-  user: User | null;
-  token: string | null;
-  login: (username: string, password: string) => Promise<boolean>;
-  logout: () => void;
+  user:            AuthUser | null;
+  token:           string | null;
   isAuthenticated: boolean;
+  isLoading:       boolean;
+  login:           (username: string, password: string) => Promise<boolean>;
+  logout:          () => void;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType | null>(null);
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
-
-interface AuthProviderProps {
-  children: ReactNode;
-}
-
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user,      setUser]      = useState<AuthUser | null>(null);
+  const [token,     setToken]     = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // ตรวจสอบ token ใน localStorage เมื่อ mount
-    const savedToken = localStorage.getItem('token');
-    const savedUser = localStorage.getItem('user');
-    
-    if (savedToken && savedUser) {
-      setToken(savedToken);
-      setUser(JSON.parse(savedUser));
+    try {
+      const savedToken = localStorage.getItem("token");
+      const savedUser  = localStorage.getItem("user");
+      if (savedToken && savedUser) {
+        setToken(savedToken);
+        setUser(JSON.parse(savedUser));
+      }
+    } catch {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
   const login = async (username: string, password: string): Promise<boolean> => {
     try {
-      const response = await fetch('http://localhost:5000/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password }),
+      const res = await fetch("http://localhost:5000/login", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ username, password }),
       });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setUser(data.user);
-        setToken(data.token);
-        
-        // บันทึกใน localStorage
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        
-        return true;
-      } else {
-        alert(data.error);
+      if (!res.ok) {
+        const err = await res.json();
+        alert(err.error ?? "Login failed");
         return false;
       }
-    } catch (error) {
-      alert('เกิดข้อผิดพลาด: ' + error);
+      const data = await res.json();
+      setToken(data.token);
+      setUser(data.user);
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user",  JSON.stringify(data.user));
+      return true;
+    } catch (e) {
+      console.error("Login error:", e);
+      alert("Cannot connect to server");
       return false;
     }
   };
 
   const logout = () => {
-    setUser(null);
     setToken(null);
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    setUser(null);
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
   };
 
-  const value: AuthContextType = {
-    user,
-    token,
-    login,
-    logout,
-    isAuthenticated: !!token,
-  };
+  return (
+    <AuthContext.Provider value={{ user, token, isAuthenticated: !!user, isLoading, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};
+export function useAuth() {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth must be used inside AuthProvider");
+  return ctx;
+}
+
+// RoleID ตรงกับ DB จริง
+export const ROLES = {
+  ADMIN:        1,
+  MECHANIC:     2,
+  RECEPTIONIST: 3,
+  CUSTOMER:     4,
+} as const;

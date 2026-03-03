@@ -1,60 +1,45 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "./contexts/AuthContext";
-import Login from "./pages/login";
-import Register from "./pages/register";
-import ProtectedRoute from "./components/ProtectedRoute";
-import DashboardRouter from "./components/DashboardRouter";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import Login     from "./pages/login";
+import Register  from "./pages/register";
+import Dashboard from "./pages/dashboard/Dashboard";
+
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  // รอโหลด localStorage ก่อน — ไม่ redirect จนกว่าจะรู้ว่า login อยู่หรือเปล่า
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+        <div className="text-gray-500 text-sm animate-pulse">กำลังโหลด...</div>
+      </div>
+    );
+  }
+
+  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
+}
+
+function AppRoutes() {
+  return (
+    <Routes>
+      <Route path="/login"     element={<Login />} />
+      <Route path="/register"  element={<Register />} />
+      <Route path="/dashboard" element={
+        <ProtectedRoute>
+          <Dashboard />
+        </ProtectedRoute>
+      } />
+      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+    </Routes>
+  );
+}
 
 export default function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          {/* Public routes */}
-          <Route path="/" element={<Login />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-
-          {/* Protected dashboard route - จะ redirect ตาม role อัตโนมัติ */}
-          <Route 
-            path="/dashboard" 
-            element={
-              <ProtectedRoute>
-                <DashboardRouter />
-              </ProtectedRoute>
-            } 
-          />
-
-          {/* Direct dashboard routes (optional - สำหรับ bookmarking) */}
-          <Route 
-            path="/dashboard/admin" 
-            element={
-              <ProtectedRoute requiredRole={1}>
-                <DashboardRouter />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/dashboard/staff" 
-            element={
-              <ProtectedRoute requiredRole={2}>
-                <DashboardRouter />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/dashboard/customer" 
-            element={
-              <ProtectedRoute requiredRole={3}>
-                <DashboardRouter />
-              </ProtectedRoute>
-            } 
-          />
-
-          {/* Catch all - redirect to login */}
-          <Route path="*" element={<Navigate to="/login" replace />} />
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+    <BrowserRouter>
+      <AuthProvider>
+        <AppRoutes />
+      </AuthProvider>
+    </BrowserRouter>
   );
 }
