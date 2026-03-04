@@ -1,6 +1,10 @@
 // pages/dashboard/CustomerDashboard.tsx
 import { useState, useEffect } from "react";
 import { useAuth } from "../../contexts/AuthContext";
+import {
+  LayoutDashboard, Car, Wrench, Package, LogOut,
+  RefreshCw, AlertCircle
+} from "lucide-react";
 
 const API = "http://localhost:5000";
 type Section = "dashboard" | "vehicles" | "workorders" | "parts";
@@ -232,9 +236,9 @@ function PartsSection({ token }: { token: string }) {
           <option value="all">ทุก Category</option>
           {safeCats.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
-        <button onClick={refetch} className="ml-auto bg-gray-800 hover:bg-gray-700 px-3 py-2 rounded-xl text-sm transition">🔄</button>
+        <button onClick={refetch} className="ml-auto bg-gray-800 hover:bg-gray-700 px-3 py-2 rounded-xl text-sm transition flex items-center gap-1"><RefreshCw size={13}/></button>
       </div>
-      {error && <p className="text-red-400 text-sm">❌ {error}</p>}
+      {error && <p className="text-red-400 text-sm flex items-center gap-1"><AlertCircle size={14}/> {error}</p>}
       {loading ? <div className="grid grid-cols-2 md:grid-cols-3 gap-4">{Array.from({length:6}).map((_,i)=><Sk key={i} className="h-28"/>)}</div>
         : safeParts.length === 0 ? <p className="text-gray-500 text-sm">ไม่พบอะไหล่</p>
         : <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -246,7 +250,7 @@ function PartsSection({ token }: { token: string }) {
                 </div>
                 <p className="font-semibold">{p.name}</p>
                 {p.brand && <p className="text-xs text-gray-400 mt-0.5">{p.brand}</p>}
-                {(p.compatible_models ?? []).length > 0 && <p className="text-xs text-gray-500 mt-2 truncate">🚗 {p.compatible_models!.join(", ")}</p>}
+                {(p.compatible_models ?? []).length > 0 && <p className="text-xs text-gray-500 mt-2 truncate flex items-center gap-1"><Car size={11}/> {p.compatible_models!.join(", ")}</p>}
               </div>
             ))}
           </div>
@@ -256,11 +260,19 @@ function PartsSection({ token }: { token: string }) {
 }
 
 const NAV: { label: string; section: Section; icon: string }[] = [
-  { label:"Dashboard",     section:"dashboard",  icon:"▦"  },
-  { label:"รถของฉัน",     section:"vehicles",   icon:"🚗" },
-  { label:"งานซ่อม/แต่ง", section:"workorders", icon:"🔧" },
-  { label:"อะไหล่",        section:"parts",      icon:"📦" },
+  { label:"Dashboard",     section:"dashboard",  icon:"" },
+  { label:"รถของฉัน",     section:"vehicles",   icon:"" },
+  { label:"งานซ่อม/แต่ง", section:"workorders", icon:"" },
+  { label:"อะไหล่",        section:"parts",      icon:"" },
 ];
+
+
+const CUST_NAV_ICONS: Record<string, React.ReactNode> = {
+  dashboard:  <LayoutDashboard size={16} />,
+  vehicles:   <Car size={16} />,
+  workorders: <Wrench size={16} />,
+  parts:      <Package size={16} />,
+};
 
 export default function CustomerDashboard() {
   const { user, logout, token } = useAuth();
@@ -273,7 +285,7 @@ export default function CustomerDashboard() {
         <nav className="space-y-1 text-sm flex-1">
           {NAV.map(item => (
             <button key={item.section} onClick={()=>setActive(item.section)} className={`flex items-center gap-3 w-full text-left px-4 py-2.5 rounded-lg transition ${active===item.section?"bg-red-600 text-white":"text-gray-300 hover:bg-gray-800"}`}>
-              <span>{item.icon}</span>{item.label}
+              <span className="flex-shrink-0">{CUST_NAV_ICONS[item.section]}</span>{item.label}
             </button>
           ))}
         </nav>
@@ -282,7 +294,7 @@ export default function CustomerDashboard() {
             <div className="w-8 h-8 rounded-full bg-red-600 flex items-center justify-center text-xs font-bold">{user?.username?.[0]?.toUpperCase()}</div>
             <div className="overflow-hidden"><p className="text-sm font-medium truncate">{user?.username}</p><p className="text-xs text-gray-500">Customer</p></div>
           </div>
-          <button onClick={logout} className="text-xs text-gray-500 hover:text-red-400 transition">ออกจากระบบ →</button>
+          <button onClick={logout} className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-red-400 transition"><LogOut size={12}/> ออกจากระบบ</button>
         </div>
       </aside>
       <main className="flex-1 p-8 overflow-auto">

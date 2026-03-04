@@ -25,7 +25,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black flex items-center justify-center relative overflow-hidden">
+    <div className="min-h-screen bg-linear-to-br from-black via-zinc-900 to-black flex items-center justify-center relative overflow-hidden">
 
       {/* Glow Effect */}
       <div className="absolute w-[500px] h-[500px] bg-red-600 rounded-full blur-[180px] opacity-30 top-[-100px] left-[-100px]" />
@@ -77,7 +77,7 @@ export default function Login() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-3 bg-gradient-to-r from-red-600 to-orange-500 text-white font-bold rounded-xl shadow-lg hover:scale-[1.02] active:scale-95 transition-transform duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-3 bg-linear-to-r from-red-600 to-orange-500 text-white font-bold rounded-xl shadow-lg hover:scale-[1.02] active:scale-95 transition-transform duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? "STARTING ENGINE..." : "START ENGINE"}
           </button>

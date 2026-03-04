@@ -54,7 +54,7 @@ export default function RacingRegister() {
 };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black flex items-center justify-center relative overflow-hidden">
+    <div className="min-h-screen bg-linear-to-br from-black via-zinc-900 to-black flex items-center justify-center relative overflow-hidden">
 
       {/* Glow Background */}
       <div className="absolute w-[500px] h-[500px] bg-red-600 rounded-full blur-[180px] opacity-30 top-[-120px] left-[-120px]" />
@@ -134,7 +134,7 @@ export default function RacingRegister() {
 
           <button
             type="submit"
-            className="w-full py-3 bg-gradient-to-r from-red-600 to-orange-500 text-white font-bold rounded-xl shadow-lg hover:scale-[1.02] active:scale-95 transition-transform duration-200"
+            className="w-full py-3 bg-linear-to-r from-red-600 to-orange-500 text-white font-bold rounded-xl shadow-lg hover:scale-[1.02] active:scale-95 transition-transform duration-200"
           >
             CREATE ACCOUNT
           </button>

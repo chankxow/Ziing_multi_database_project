@@ -1,6 +1,12 @@
 // pages/AdminDashboard.tsx
 import { useState, useEffect } from "react";
 import { useAuth } from "../../contexts/AuthContext";
+import {
+  LayoutDashboard, Wrench, Package, Users, LogOut,
+  AlertTriangle, CheckCircle, XCircle, RefreshCw,
+  Search, Pencil, Trash2, ChevronRight, Plus, Database,
+  AlertCircle
+} from "lucide-react";
 
 const API = "http://localhost:5000";
 type Section = "dashboard" | "workorders" | "parts" | "staff";
@@ -78,7 +84,7 @@ function OverviewSection({ token }: { token: string }) {
   const parts: any[]   = data?.parts_summary ?? [];
   const total = Object.values(breakdown).reduce((a, b) => a + b, 0);
 
-  if (error) return <p className="text-red-400 text-sm">❌ {error}</p>;
+  if (error) return <p className="text-red-400 text-sm flex items-center gap-1"><AlertCircle size={14}/> {error}</p>;
 
   return (
     <div className="space-y-6">
@@ -164,7 +170,7 @@ function OverviewSection({ token }: { token: string }) {
       </section>
 
       <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
-        <h3 className="font-semibold mb-4">Parts Overview <span className="text-xs text-gray-500 font-normal ml-1">📦 MongoDB</span></h3>
+        <h3 className="font-semibold mb-4 flex items-center gap-2">Parts Overview <span className="text-xs text-gray-500 font-normal flex items-center gap-1"><Database size={11}/> MongoDB</span></h3>
         {loading
           ? <div className="grid grid-cols-3 md:grid-cols-6 gap-4">{Array.from({ length: 6 }).map((_, i) => <Sk key={i} className="h-16" />)}</div>
           : <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
@@ -173,7 +179,7 @@ function OverviewSection({ token }: { token: string }) {
                   <p className="text-xs text-gray-400 mb-1 capitalize">{p.category}</p>
                   <p className="text-2xl font-bold">{p.total_stock}</p>
                   <p className="text-xs text-gray-500 mt-1">{p.count} SKUs</p>
-                  {p.total_stock < LOW_STOCK && <p className="text-xs text-red-400 mt-1">⚠️ Low</p>}
+                  {p.total_stock < LOW_STOCK && <p className="text-xs text-red-400 mt-1 flex items-center justify-center gap-0.5"><AlertTriangle size={10}/> Low</p>}
                 </div>
               ))}
             </div>
@@ -212,12 +218,12 @@ function WorkOrdersSection({ token, canEdit, canDelete }: { token: string; canEd
 
   const updateStatus = async (id: number, status: string) => {
     await apiFetch(`/workorders/${id}/status`, token, { method: "PATCH", body: JSON.stringify({ status }) });
-    showToast(`✅ อัปเดตเป็น "${status}"`); refetch();
+    showToast(`อัปเดตเป็น "${status}"`); refetch();
   };
   const deleteOrder = async (id: number) => {
     if (!confirm(`ลบ #${id}?`)) return;
     await apiFetch(`/workorders/${id}`, token, { method: "DELETE" });
-    showToast("🗑 ลบสำเร็จ"); refetch();
+    showToast("ลบสำเร็จ"); refetch();
   };
 
   return (
@@ -226,15 +232,15 @@ function WorkOrdersSection({ token, canEdit, canDelete }: { token: string; canEd
       {showCreate && (
         <CreateWOModal vehicles={safeVehicles} staffList={safeStaff} token={token}
           onClose={() => setShowCreate(false)}
-          onCreated={() => { refetch(); showToast("✅ สร้างสำเร็จ"); }} />
+          onCreated={() => { refetch(); showToast("สร้างสำเร็จ"); }} />
       )}
       {editOrder && (
         <EditWOModal order={editOrder} staffList={safeStaff} token={token}
           onClose={() => setEditOrder(null)}
-          onSaved={() => { refetch(); showToast("✅ บันทึกสำเร็จ"); }} />
+          onSaved={() => { refetch(); showToast("บันทึกสำเร็จ"); }} />
       )}
 
-      {error && <p className="text-red-400 text-sm">❌ {error}</p>}
+      {error && <p className="text-red-400 text-sm flex items-center gap-1"><AlertCircle size={14}/> {error}</p>}
 
       <div className="flex justify-between items-center">
         <p className="text-sm text-gray-400">{safeOrders.length} รายการ</p>
@@ -261,8 +267,11 @@ function WorkOrdersSection({ token, canEdit, canDelete }: { token: string; canEd
             </span>
           </button>
         ))}
-        <input placeholder="🔍 ค้นหา..." value={searchText} onChange={e => setSearchText(e.target.value)}
-          className="ml-auto bg-gray-800 px-4 py-1.5 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-red-500 w-44" />
+        <div className="relative ml-auto">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"/>
+          <input placeholder="ค้นหา..." value={searchText} onChange={e => setSearchText(e.target.value)}
+            className="bg-gray-800 pl-8 pr-4 py-1.5 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-red-500 w-44" />
+        </div>
       </div>
 
       {/* Table */}
@@ -304,7 +313,7 @@ function WorkOrdersSection({ token, canEdit, canDelete }: { token: string; canEd
                       <td className="px-4 py-3 text-right">{o.TotalCost > 0 ? `฿${o.TotalCost.toLocaleString()}` : "—"}</td>
                       <td className="px-4 py-3 text-xs text-gray-400">
                         {o.CreatedDate?.slice(0, 10)}
-                        {o.CompletedDate && <p className="text-green-400">✓ {o.CompletedDate.slice(0, 10)}</p>}
+                        {o.CompletedDate && <p className="text-green-400 flex items-center gap-0.5"><CheckCircle size={10}/> {o.CompletedDate.slice(0, 10)}</p>}
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex justify-center gap-1.5 flex-wrap">
@@ -316,15 +325,15 @@ function WorkOrdersSection({ token, canEdit, canDelete }: { token: string; canEd
                           )}
                           {canEdit && o.Status !== "Completed" && o.Status !== "Cancelled" && (
                             <button onClick={() => updateStatus(o.WorkOrderID, "Cancelled")}
-                              className="text-xs px-2 py-1 bg-red-600/20 hover:bg-red-600/40 text-red-400 rounded-lg transition">✕</button>
+                              className="text-xs px-2 py-1 bg-red-600/20 hover:bg-red-600/40 text-red-400 rounded-lg transition"><XCircle size={12}/></button>
                           )}
                           {canEdit && (
                             <button onClick={() => setEditOrder(o)}
-                              className="text-xs px-2 py-1 bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 rounded-lg transition">✏️</button>
+                              className="text-xs px-2 py-1 bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 rounded-lg transition"><Pencil size={12}/></button>
                           )}
                           {canDelete && (
                             <button onClick={() => deleteOrder(o.WorkOrderID)}
-                              className="text-xs px-2 py-1 bg-gray-700 hover:bg-gray-600 text-gray-400 rounded-lg transition">🗑</button>
+                              className="text-xs px-2 py-1 bg-gray-700 hover:bg-gray-600 text-gray-400 rounded-lg transition"><Trash2 size={12}/></button>
                           )}
                         </div>
                       </td>
@@ -369,7 +378,7 @@ function CreateWOModal({ vehicles, staffList, token, onClose, onCreated }: {
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
       <div className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-lg p-6 space-y-4">
-        <h2 className="text-lg font-semibold">🔧 สร้าง Work Order ใหม่</h2>
+        <h2 className="text-lg font-semibold">สร้าง Work Order ใหม่</h2>
         {err && <p className="text-red-400 text-sm">{err}</p>}
         <div className="space-y-3">
           <div>
@@ -440,7 +449,7 @@ function EditWOModal({ order, staffList, token, onClose, onSaved }: {
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
       <div className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-md p-6 space-y-4">
-        <h2 className="text-lg font-semibold">✏️ แก้ไข #{order.WorkOrderID} — {order.Year} {order.Make} {order.Model}</h2>
+        <h2 className="text-lg font-semibold">แก้ไข #{order.WorkOrderID} — {order.Year} {order.Make} {order.Model}</h2>
         <div className="space-y-3">
           <div>
             <label className="text-xs text-gray-400 mb-1 block">รายละเอียด</label>
@@ -500,19 +509,19 @@ function PartsSection({ token, canEdit }: { token: string; canEdit: boolean }) {
       ? await apiFetch(`/parts/${data.part_id}`, token, { method: "PUT",  body: JSON.stringify(data) })
       : await apiFetch("/parts",                  token, { method: "POST", body: JSON.stringify(data) });
     if (!res.ok) { const j = await res.json(); alert(j.error); return; }
-    showToast(isEdit ? "✅ แก้ไขสำเร็จ" : "✅ เพิ่มสำเร็จ");
+    showToast(isEdit ? "แก้ไขสำเร็จ" : "เพิ่มสำเร็จ");
     setEditPart(null); refetch();
   };
 
   const adjustStock = async (part_id: string, delta: number) => {
     const res = await apiFetch(`/parts/${part_id}/stock`, token, { method: "PATCH", body: JSON.stringify({ delta }) });
     if (!res.ok) { const j = await res.json(); alert(j.error); return; }
-    showToast("✅ อัปเดต Stock"); setStockPart(null); refetch();
+    showToast("อัปเดต Stock"); setStockPart(null); refetch();
   };
 
   const deletePart = async (part: Part) => {
     await apiFetch(`/parts/${part.part_id}`, token, { method: "DELETE" });
-    showToast("🗑 ลบสำเร็จ"); setDelPart(null); refetch();
+    showToast("ลบสำเร็จ"); setDelPart(null); refetch();
   };
 
   return (
@@ -525,7 +534,7 @@ function PartsSection({ token, canEdit }: { token: string; canEdit: boolean }) {
       {stockPart && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
           <div className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-sm p-6 space-y-4">
-            <h2 className="text-lg font-semibold">📦 ปรับ Stock — {stockPart.name}</h2>
+            <h2 className="text-lg font-semibold">ปรับ Stock — {stockPart.name}</h2>
             <p className="text-xs text-gray-400">ปัจจุบัน: {stockPart.stock}</p>
             <StockAdjust part={stockPart} onClose={() => setStockPart(null)} onAdjust={adjustStock} />
           </div>
@@ -544,10 +553,10 @@ function PartsSection({ token, canEdit }: { token: string; canEdit: boolean }) {
         </div>
       )}
 
-      {error && <p className="text-red-400 text-sm">❌ {error}</p>}
+      {error && <p className="text-red-400 text-sm flex items-center gap-1"><AlertCircle size={14}/> {error}</p>}
 
       <div className="flex justify-between items-center">
-        <p className="text-xs text-gray-500">📦 MongoDB — {safeParts.length} รายการ</p>
+        <p className="text-xs text-gray-500 flex items-center gap-1"><Database size={11}/> MongoDB — {safeParts.length} รายการ</p>
         {canEdit && (
           <button onClick={() => setEditPart("new")}
             className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-xl text-sm transition">+ เพิ่ม Part</button>
@@ -555,7 +564,7 @@ function PartsSection({ token, canEdit }: { token: string; canEdit: boolean }) {
       </div>
 
       <div className="flex flex-wrap gap-3 items-center">
-        <input placeholder="🔍 ค้นหา..." value={search} onChange={e => setSearch(e.target.value)}
+        <input placeholder="ค้นหา..." value={search} onChange={e => setSearch(e.target.value)}
           className="bg-gray-800 px-4 py-2 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-red-500 w-52" />
         <select value={catFilter} onChange={e => setCatFilter(e.target.value)}
           className="bg-gray-800 px-3 py-2 rounded-xl text-sm focus:outline-none">
@@ -566,7 +575,7 @@ function PartsSection({ token, canEdit }: { token: string; canEdit: boolean }) {
           <input type="checkbox" checked={lowOnly} onChange={e => setLowOnly(e.target.checked)} className="accent-red-500" />
           Low Stock
         </label>
-        <button onClick={refetch} className="ml-auto bg-gray-800 hover:bg-gray-700 px-3 py-2 rounded-xl text-sm transition">🔄</button>
+        <button onClick={refetch} className="ml-auto bg-gray-800 hover:bg-gray-700 px-3 py-2 rounded-xl text-sm transition flex items-center gap-1"><RefreshCw size={13}/></button>
       </div>
 
       <div className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
@@ -610,12 +619,12 @@ function PartsSection({ token, canEdit }: { token: string; canEdit: boolean }) {
                       <td className="px-4 py-3">
                         <div className="flex justify-center gap-1.5">
                           <button onClick={() => setStockPart(part)}
-                            className="text-xs px-2 py-1 bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 rounded-lg transition">📦</button>
+                            className="text-xs px-2 py-1 bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 rounded-lg transition"><Package size={12}/></button>
                           {canEdit && (<>
                             <button onClick={() => setEditPart(part)}
-                              className="text-xs px-2 py-1 bg-yellow-600/20 hover:bg-yellow-600/40 text-yellow-400 rounded-lg transition">✏️</button>
+                              className="text-xs px-2 py-1 bg-yellow-600/20 hover:bg-yellow-600/40 text-yellow-400 rounded-lg transition"><Pencil size={12}/></button>
                             <button onClick={() => setDelPart(part)}
-                              className="text-xs px-2 py-1 bg-red-600/20 hover:bg-red-600/40 text-red-400 rounded-lg transition">🗑</button>
+                              className="text-xs px-2 py-1 bg-red-600/20 hover:bg-red-600/40 text-red-400 rounded-lg transition"><Trash2 size={12}/></button>
                           </>)}
                         </div>
                       </td>
@@ -655,7 +664,7 @@ function PartModal({ part, categories, onClose, onSave }: {
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
       <div className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-lg p-6 space-y-4">
-        <h2 className="text-lg font-semibold">{isEdit ? "✏️ แก้ไข Part" : "➕ เพิ่ม Part ใหม่"}</h2>
+        <h2 className="text-lg font-semibold">{isEdit ? "แก้ไข Part" : "เพิ่ม Part ใหม่"}</h2>
         {err && <p className="text-red-400 text-sm">{err}</p>}
         <div className="grid grid-cols-2 gap-3">
           <div className="col-span-2">
@@ -771,7 +780,7 @@ function StaffSection({ token }: { token: string }) {
     const json = await res.json();
     setSaving(false);
     if (!res.ok) { setFormErr(json.error); return; }
-    showToast("✅ สร้างบัญชีพนักงานสำเร็จ");
+    showToast("สร้างบัญชีพนักงานสำเร็จ");
     setShowCreate(false);
     setForm({ username:"", firstName:"", lastName:"", password:"", role_id:"2" });
     setFormErr("");
@@ -782,7 +791,7 @@ function StaffSection({ token }: { token: string }) {
     await apiFetch(`/users/staff/${id}`, token, {
       method: "PATCH", body: JSON.stringify({ is_active: !current }),
     });
-    showToast(current ? "⛔ ระงับบัญชีแล้ว" : "✅ เปิดใช้งานแล้ว");
+    showToast(current ? "ระงับบัญชีแล้ว" : "เปิดใช้งานแล้ว");
     refetch();
   };
 
@@ -791,7 +800,7 @@ function StaffSection({ token }: { token: string }) {
     const res = await apiFetch(`/users/staff/${u.UserID}`, token, { method: "DELETE" });
     const json = await res.json();
     if (!res.ok) { alert(json.error); return; }
-    showToast("🗑 ลบบัญชีสำเร็จ"); refetch();
+    showToast("ลบบัญชีสำเร็จ"); refetch();
   };
 
   return (
@@ -848,7 +857,7 @@ function StaffSection({ token }: { token: string }) {
         </div>
       )}
 
-      {error && <p className="text-red-400 text-sm">❌ {error}</p>}
+      {error && <p className="text-red-400 text-sm flex items-center gap-1"><AlertCircle size={14}/> {error}</p>}
 
       {/* Staff table */}
       <div className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
@@ -907,11 +916,18 @@ function StaffSection({ token }: { token: string }) {
 }
 
 // ── Main ──────────────────────────────────────────────────
+const NAV_ICONS: Record<string, React.ReactNode> = {
+  dashboard:  <LayoutDashboard size={16} />,
+  workorders: <Wrench size={16} />,
+  parts:      <Package size={16} />,
+  staff:      <Users size={16} />,
+};
+
 const NAV: { label: string; section: Section; icon: string }[] = [
-  { label: "Dashboard",         section: "dashboard",  icon: "▦"  },
-  { label: "Work Orders",       section: "workorders", icon: "🔧" },
-  { label: "Parts & Inventory", section: "parts",      icon: "📦" },
-  { label: "จัดการพนักงาน",    section: "staff",      icon: "👥" },
+  { label: "Dashboard",         section: "dashboard",  icon: "" },
+  { label: "Work Orders",       section: "workorders", icon: "" },
+  { label: "Parts & Inventory", section: "parts",      icon: "" },
+  { label: "จัดการพนักงาน",    section: "staff",      icon: "" },
 ];
 
 export default function AdminDashboard() {
@@ -933,7 +949,7 @@ export default function AdminDashboard() {
               className={`flex items-center gap-3 w-full text-left px-4 py-2.5 rounded-lg transition ${
                 active === item.section ? "bg-red-600 text-white" : "text-gray-300 hover:bg-gray-800"
               }`}>
-              <span>{item.icon}</span>{item.label}
+              <span className="flex-shrink-0">{NAV_ICONS[item.section]}</span>{item.label}
             </button>
           ))}
         </nav>
@@ -947,7 +963,7 @@ export default function AdminDashboard() {
               <p className="text-xs text-gray-500">{user?.role === 1 ? "Admin" : "Receptionist"}</p>
             </div>
           </div>
-          <button onClick={logout} className="text-xs text-gray-500 hover:text-red-400 transition">ออกจากระบบ →</button>
+          <button onClick={logout} className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-red-400 transition"><LogOut size={12} /> ออกจากระบบ</button>
         </div>
       </aside>
 
