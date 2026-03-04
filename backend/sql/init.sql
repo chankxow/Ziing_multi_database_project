@@ -1,5 +1,15 @@
 CREATE DATABASE CarCustomShop;
 USE CarCustomShop;
+
+
+ALTER TABLE User ADD COLUMN CustomerID INT NULL;
+ALTER TABLE User ADD CONSTRAINT fk_user_customer 
+  FOREIGN KEY (CustomerID) REFERENCES Customer(CustomerID);
+
+-- เพิ่ม Role Customer 
+INSERT IGNORE INTO Role (RoleName) VALUES ('Customer');
+
+
 -- 1. Create Role table
 CREATE TABLE IF NOT EXISTS Role (
     RoleID INT AUTO_INCREMENT PRIMARY KEY,
