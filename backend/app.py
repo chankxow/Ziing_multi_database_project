@@ -115,8 +115,7 @@ def register():
         execute(
             "INSERT INTO User (Username,PasswordHash,FirstName,LastName,RoleID,CustomerID) VALUES(%s,%s,%s,%s,%s,%s)",
             (body["username"], hashed, body.get("firstName",""), body.get("lastName",""),
-             body.get("role_id", 4), 
-             body.get("customer_id"))
+             body.get("role_id", 3), body.get("customer_id"))
         )
         return jsonify({"status": "registered", "username": body["username"]})
     except Exception as e:
@@ -126,6 +125,89 @@ def register():
 # =========================
 # DASHBOARD APIs
 # =========================
+
+@app.route("/users/staff", methods=["GET"])
+@token_required
+@role_required(1)
+def get_staff_list():
+    """GET /users/staff — รายชื่อ staff ทั้งหมด พร้อม role"""
+    try:
+        rows = query("""
+            SELECT u.UserID, u.Username, u.FirstName, u.LastName,
+                   u.IsActive, u.CreatedDate, r.RoleID, r.RoleName
+            FROM User u
+            JOIN Role r ON u.RoleID = r.RoleID
+            WHERE r.RoleID IN (1,2,3)
+            ORDER BY r.RoleID, u.FirstName
+        """)
+        for r in rows:
+            r["CreatedDate"] = str(r["CreatedDate"])
+        return jsonify(rows)
+    except Exception:
+        traceback.print_exc()
+        return jsonify({"error": "Failed"}), 500
+
+
+@app.route("/users/staff", methods=["POST"])
+@token_required
+@role_required(1)
+def create_staff():
+    """
+    POST /users/staff
+    Body: { username, password, firstName, lastName, role_id }
+    role_id: 1=Admin, 2=Mechanic, 3=Receptionist
+    """
+    try:
+        b = request.json
+        for f in ["username", "password", "firstName", "lastName", "role_id"]:
+            if not b.get(f):
+                return jsonify({"error": f"Missing: {f}"}), 400
+        role_id = int(b["role_id"])
+        if role_id not in (1, 2, 3):
+            return jsonify({"error": "role_id ต้องเป็น 1, 2 หรือ 3"}), 400
+        if query("SELECT UserID FROM User WHERE Username = %s", (b["username"],)):
+            return jsonify({"error": "Username already exists"}), 400
+        hashed = bcrypt.hashpw(b["password"].encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+        execute(
+            "INSERT INTO User (Username,PasswordHash,FirstName,LastName,RoleID,CustomerID) VALUES(%s,%s,%s,%s,%s,NULL)",
+            (b["username"], hashed, b["firstName"], b["lastName"], role_id)
+        )
+        new_id = query("SELECT LAST_INSERT_ID() AS id")[0]["id"]
+        return jsonify({"status": "created", "user_id": new_id}), 201
+    except Exception:
+        traceback.print_exc()
+        return jsonify({"error": "Failed"}), 500
+
+
+@app.route("/users/staff/<int:user_id>", methods=["PATCH"])
+@token_required
+@role_required(1)
+def toggle_staff_active(user_id):
+    """PATCH /users/staff/<id>  Body: { is_active: bool }"""
+    try:
+        b = request.json
+        execute("UPDATE User SET IsActive = %s WHERE UserID = %s", (b["is_active"], user_id))
+        return jsonify({"status": "updated"})
+    except Exception:
+        traceback.print_exc()
+        return jsonify({"error": "Failed"}), 500
+
+
+@app.route("/users/staff/<int:user_id>", methods=["DELETE"])
+@token_required
+@role_required(1)
+def delete_staff(user_id):
+    """DELETE /users/staff/<id> — ลบพนักงาน (ถ้าไม่มี work order)"""
+    try:
+        wo = query("SELECT WorkOrderID FROM WorkOrder WHERE UserID = %s LIMIT 1", (user_id,))
+        if wo:
+            return jsonify({"error": "ไม่สามารถลบพนักงานที่มี work order อยู่"}), 400
+        execute("DELETE FROM User WHERE UserID = %s AND RoleID != 4", (user_id,))
+        return jsonify({"status": "deleted"})
+    except Exception:
+        traceback.print_exc()
+        return jsonify({"error": "Failed"}), 500
+
 
 @app.route("/dashboard/admin", methods=["GET"])
 @token_required
@@ -263,11 +345,12 @@ def get_workorders():
                    wo.VehicleID, wo.UserID,
                    v.Make, v.Model, v.Year, v.LicensePlate,
                    c.CustomerID, c.FirstName AS CustFirst, c.LastName AS CustLast,
-                   u.FirstName AS StaffFirst, u.LastName AS StaffLast
+                   COALESCE(u.FirstName, 'Unassigned') AS StaffFirst,
+                   COALESCE(u.LastName, '')            AS StaffLast
             FROM WorkOrder wo
-            JOIN Vehicle v  ON wo.VehicleID = v.VehicleID
-            JOIN Customer c ON v.CustomerID = c.CustomerID
-            JOIN User u     ON wo.UserID    = u.UserID
+            JOIN Vehicle v   ON wo.VehicleID = v.VehicleID
+            JOIN Customer c  ON v.CustomerID = c.CustomerID
+            LEFT JOIN User u ON wo.UserID    = u.UserID
             {where}
             ORDER BY FIELD(wo.Status,'In Progress','Pending','Completed','Cancelled'),
                      wo.CreatedDate DESC

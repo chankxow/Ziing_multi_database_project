@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 
 const API = "http://localhost:5000";
-type Section = "dashboard" | "workorders" | "parts";
+type Section = "dashboard" | "workorders" | "parts" | "staff";
 
 interface WorkOrder {
   WorkOrderID: number; Description: string; Status: string; TotalCost: number;
@@ -34,11 +34,16 @@ function useGet<T>(url: string, token: string, deps: unknown[] = []) {
   const [tick,    setTick]    = useState(0);
   useEffect(() => {
     if (!token) return;
+    const controller = new AbortController();
     setLoading(true); setError("");
-    apiFetch(url, token)
+    fetch(`http://localhost:5000${url}`, {
+      signal: controller.signal,
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    })
       .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
-      .then(d => { setData(d); setLoading(false); })
-      .catch(e => { setError(e.message); setLoading(false); });
+      .then(d => { if (!controller.signal.aborted) { setData(d); setLoading(false); } })
+      .catch(e => { if (e.name !== "AbortError") { setError(e.message); setLoading(false); } });
+    return () => controller.abort();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [url, token, tick, ...deps]);
   return { data, loading, error, refetch: () => setTick(n => n + 1) };
@@ -729,11 +734,184 @@ function StockAdjust({ part, onClose, onAdjust }: {
   );
 }
 
+
+// ── Staff Management ──────────────────────────────────────
+interface StaffUser {
+  UserID: number; Username: string; FirstName: string; LastName: string;
+  RoleID: number; RoleName: string; IsActive: boolean; CreatedDate: string;
+}
+
+function StaffSection({ token }: { token: string }) {
+  const { data, loading, error, refetch } = useGet<StaffUser[]>("/users/staff", token);
+  const safeStaff: StaffUser[] = Array.isArray(data) ? data : [];
+
+  const [showCreate, setShowCreate] = useState(false);
+  const [form, setForm] = useState({ username:"", firstName:"", lastName:"", password:"", role_id:"2" });
+  const [saving, setSaving] = useState(false);
+  const [formErr, setFormErr] = useState("");
+  const [toast, setToast] = useState("");
+  const showToast = (m: string) => { setToast(m); setTimeout(() => setToast(""), 3000); };
+  const set = (k: string, v: string) => setForm(f => ({...f, [k]: v}));
+
+  const ROLE_LABELS: Record<number, string> = { 1: "Admin", 2: "Mechanic", 3: "Receptionist" };
+  const ROLE_COLORS: Record<number, string> = {
+    1: "bg-red-500/20 text-red-400 border border-red-500/30",
+    2: "bg-blue-500/20 text-blue-400 border border-blue-500/30",
+    3: "bg-purple-500/20 text-purple-400 border border-purple-500/30",
+  };
+
+  const handleCreate = async () => {
+    if (!form.username || !form.firstName || !form.lastName || !form.password) {
+      setFormErr("กรุณากรอกข้อมูลให้ครบ"); return;
+    }
+    setSaving(true);
+    const res = await apiFetch("/users/staff", token, {
+      method: "POST", body: JSON.stringify({ ...form, role_id: parseInt(form.role_id) }),
+    });
+    const json = await res.json();
+    setSaving(false);
+    if (!res.ok) { setFormErr(json.error); return; }
+    showToast("✅ สร้างบัญชีพนักงานสำเร็จ");
+    setShowCreate(false);
+    setForm({ username:"", firstName:"", lastName:"", password:"", role_id:"2" });
+    setFormErr("");
+    refetch();
+  };
+
+  const toggleActive = async (id: number, current: boolean) => {
+    await apiFetch(`/users/staff/${id}`, token, {
+      method: "PATCH", body: JSON.stringify({ is_active: !current }),
+    });
+    showToast(current ? "⛔ ระงับบัญชีแล้ว" : "✅ เปิดใช้งานแล้ว");
+    refetch();
+  };
+
+  const handleDelete = async (u: StaffUser) => {
+    if (!confirm(`ลบบัญชี "${u.Username}"?`)) return;
+    const res = await apiFetch(`/users/staff/${u.UserID}`, token, { method: "DELETE" });
+    const json = await res.json();
+    if (!res.ok) { alert(json.error); return; }
+    showToast("🗑 ลบบัญชีสำเร็จ"); refetch();
+  };
+
+  return (
+    <div className="space-y-5">
+      <Toast msg={toast} />
+      <div className="flex justify-between items-center">
+        <p className="text-sm text-gray-400">{safeStaff.length} บัญชีพนักงาน</p>
+        <button onClick={() => setShowCreate(!showCreate)}
+          className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-xl text-sm transition">
+          {showCreate ? "ยกเลิก" : "+ สร้างบัญชีพนักงาน"}
+        </button>
+      </div>
+
+      {/* Create form */}
+      {showCreate && (
+        <div className="bg-gray-900 border border-gray-700 rounded-2xl p-6 space-y-4">
+          <h3 className="font-semibold">สร้างบัญชีพนักงานใหม่</h3>
+          {formErr && <p className="text-red-400 text-sm">{formErr}</p>}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="col-span-2">
+              <label className="text-xs text-gray-400 mb-1 block">ตำแหน่ง *</label>
+              <select value={form.role_id} onChange={e => set("role_id", e.target.value)}
+                className="w-full bg-gray-800 px-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-red-500">
+                <option value="2">Mechanic (ช่าง)</option>
+                <option value="1">Admin</option>
+                <option value="3">Receptionist</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-xs text-gray-400 mb-1 block">ชื่อ *</label>
+              <input value={form.firstName} onChange={e => set("firstName", e.target.value)}
+                placeholder="สมชาย" className="w-full bg-gray-800 px-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-red-500"/>
+            </div>
+            <div>
+              <label className="text-xs text-gray-400 mb-1 block">นามสกุล *</label>
+              <input value={form.lastName} onChange={e => set("lastName", e.target.value)}
+                placeholder="ใจดี" className="w-full bg-gray-800 px-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-red-500"/>
+            </div>
+            <div>
+              <label className="text-xs text-gray-400 mb-1 block">Username *</label>
+              <input value={form.username} onChange={e => set("username", e.target.value)}
+                placeholder="mech_som" className="w-full bg-gray-800 px-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-red-500"/>
+            </div>
+            <div>
+              <label className="text-xs text-gray-400 mb-1 block">Password *</label>
+              <input type="password" value={form.password} onChange={e => set("password", e.target.value)}
+                placeholder="••••••••" className="w-full bg-gray-800 px-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-red-500"/>
+            </div>
+          </div>
+          <button onClick={handleCreate} disabled={saving}
+            className="w-full bg-red-600 hover:bg-red-700 py-2 rounded-xl text-sm transition disabled:opacity-50">
+            {saving ? "กำลังสร้าง..." : "สร้างบัญชี"}
+          </button>
+        </div>
+      )}
+
+      {error && <p className="text-red-400 text-sm">❌ {error}</p>}
+
+      {/* Staff table */}
+      <div className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-gray-800 text-gray-400 text-xs uppercase">
+              {["ชื่อ-นามสกุล", "Username", "ตำแหน่ง", "สถานะ", "วันที่สร้าง", "Actions"].map(h => (
+                <th key={h} className="px-4 py-3 text-left">{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {loading
+              ? Array.from({length: 3}).map((_, i) => (
+                  <tr key={i} className="border-b border-gray-800/50">
+                    {Array.from({length: 6}).map((__, j) => <td key={j} className="px-4 py-3"><Sk className="h-5"/></td>)}
+                  </tr>
+                ))
+              : safeStaff.length === 0
+              ? <tr><td colSpan={6} className="text-center py-10 text-gray-500">ไม่มีพนักงาน</td></tr>
+              : safeStaff.map(u => (
+                  <tr key={u.UserID} className="border-b border-gray-800/50 hover:bg-gray-800/30 transition">
+                    <td className="px-4 py-3 font-medium">{u.FirstName} {u.LastName}</td>
+                    <td className="px-4 py-3 text-gray-400 font-mono text-xs">{u.Username}</td>
+                    <td className="px-4 py-3">
+                      <span className={`text-xs px-2 py-1 rounded-full ${ROLE_COLORS[u.RoleID] ?? ""}`}>
+                        {ROLE_LABELS[u.RoleID] ?? u.RoleName}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`text-xs px-2 py-1 rounded-full ${u.IsActive ? "bg-green-500/20 text-green-400" : "bg-gray-700 text-gray-500"}`}>
+                        {u.IsActive ? "Active" : "Inactive"}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-xs text-gray-500">{u.CreatedDate?.slice(0,10)}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex gap-1.5">
+                        <button onClick={() => toggleActive(u.UserID, u.IsActive)}
+                          className={`text-xs px-2 py-1 rounded-lg transition ${u.IsActive ? "bg-yellow-600/20 hover:bg-yellow-600/40 text-yellow-400" : "bg-green-600/20 hover:bg-green-600/40 text-green-400"}`}>
+                          {u.IsActive ? "ระงับ" : "เปิด"}
+                        </button>
+                        <button onClick={() => handleDelete(u)}
+                          className="text-xs px-2 py-1 bg-red-600/20 hover:bg-red-600/40 text-red-400 rounded-lg transition">
+                          ลบ
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 // ── Main ──────────────────────────────────────────────────
 const NAV: { label: string; section: Section; icon: string }[] = [
   { label: "Dashboard",         section: "dashboard",  icon: "▦"  },
   { label: "Work Orders",       section: "workorders", icon: "🔧" },
   { label: "Parts & Inventory", section: "parts",      icon: "📦" },
+  { label: "จัดการพนักงาน",    section: "staff",      icon: "👥" },
 ];
 
 export default function AdminDashboard() {
@@ -778,6 +956,7 @@ export default function AdminDashboard() {
         {active === "dashboard"  && <OverviewSection    token={token!} />}
         {active === "workorders" && <WorkOrdersSection  token={token!} canEdit={canEdit} canDelete={canDelete} />}
         {active === "parts"      && <PartsSection       token={token!} canEdit={canEdit} />}
+        {active === "staff"      && <StaffSection        token={token!} />}
       </main>
     </div>
   );
