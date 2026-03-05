@@ -15,7 +15,8 @@ from utils.logger import setup_logger
 
 # Import routes
 from routes import (
-    customer_bp, vehicle_bp, work_order_bp, part_bp, auth_bp
+    customer_bp, vehicle_bp, work_order_bp, part_bp, auth_bp,
+    dashboard_bp, customer_specific_bp
 )
 
 def create_app(config_name='development'):
@@ -57,6 +58,8 @@ def create_app(config_name='development'):
     app.register_blueprint(vehicle_bp)
     app.register_blueprint(work_order_bp)
     app.register_blueprint(part_bp)
+    app.register_blueprint(dashboard_bp)
+    app.register_blueprint(customer_specific_bp)
     
     # Health check endpoint
     @app.route('/health')

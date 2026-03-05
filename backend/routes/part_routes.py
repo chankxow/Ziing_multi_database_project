@@ -5,6 +5,19 @@ from middleware.validation import validate_json
 
 part_bp = Blueprint('parts', __name__, url_prefix='/parts')
 
+@part_bp.route('/categories', methods=['GET', 'OPTIONS'])
+def get_categories():
+    """Handle preflight OPTIONS request"""
+    if request.method == 'OPTIONS':
+        return '', 200
+    
+    try:
+        # Return hardcoded categories for now
+        categories = ['Engine', 'Transmission', 'Brakes', 'Suspension', 'Electrical', 'Body', 'Interior', 'Performance']
+        return jsonify(categories), 200
+    except Exception as e:
+        return jsonify({'error': 'Failed to fetch categories', 'message': str(e)}), 500
+
 @part_bp.route('', methods=['GET'])
 @token_required
 def get_all_parts():

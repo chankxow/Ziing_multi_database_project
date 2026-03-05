@@ -36,7 +36,7 @@ function useGet<T>(url: string, token: string, deps: unknown[] = []) {
     if (!token) return;
     const controller = new AbortController();
     setLoading(true); setError("");
-    fetch(`http://localhost:5000${url}`, {
+    fetch(`${API}${url}`, {
       signal: controller.signal,
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
     })

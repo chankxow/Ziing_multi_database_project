@@ -4,7 +4,7 @@ seed_mongo.py — รัน 1 ครั้งเพื่อเพิ่ม Part
 วิธีใช้:
     python seed_mongo.py
 """
-from db_mongo import get_parts_collection
+from database import get_parts_collection
 
 SAMPLE_PARTS = [
     # Engine

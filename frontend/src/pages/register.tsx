@@ -29,16 +29,17 @@ export default function RacingRegister() {
   }
 
   try {
-    // ✅ เปลี่ยนจาก /register → /register/customer
-    const res = await fetch("http://localhost:5000/register/customer", {
+    // ✅ เปลี่ยนจาก /register → /auth/register/customer
+    const res = await fetch("http://localhost:5000/auth/register/customer", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         username:  form.username,
         password:  form.password,
-        firstName: form.username,  // หรือเพิ่ม field firstName/lastName ใน form ก็ได้
-        lastName:  "User",
-        phone:     form.phone,     // ✅ ส่ง phone ด้วย
+        name: form.username + " User",  // รวมชื่อเป็นฟิลด์เดียว
+        email: form.username + "@example.com",  // เพิ่ม email
+        phone: form.phone,
+        address: "Default Address"  // เพิ่ม address
       })
     });
     const data = await res.json();
