@@ -354,7 +354,7 @@ def get_workorders():
             {where}
             ORDER BY FIELD(wo.Status,'In Progress','Pending','Completed','Cancelled'),
                      wo.CreatedDate DESC
-        """, params if params else None)
+        """, params or [])
 
         for r in rows:
             r["TotalCost"]     = float(r["TotalCost"]) if r["TotalCost"] else 0

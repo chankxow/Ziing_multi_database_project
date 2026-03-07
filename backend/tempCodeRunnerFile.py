@@ -167,3 +167,17 @@ def create_staff():
             return jsonify({"error": "role_id ต้องเป็น 1, 2 หรือ 3"}), 400
         if query("SELECT UserID FROM User WHERE Username = %s", (b["username"],)):
             return jsonify({"error": "Username already exists"}), 400
+    except Exception:
+        traceback.print_exc()
+        return jsonify({"error": "Failed"}), 500
+@app.errorhandler(Exception)
+def handle_error(e):
+    traceback.print_exc()
+    return jsonify({"error": "Internal Server Error"}), 500
+
+@app.route("/favicon.ico")
+def favicon():
+    return "", 204
+
+if __name__ == "__main__":
+    app.run(debug=True, host="0.0.0.0", port=5000)
