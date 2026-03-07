@@ -1,6 +1,10 @@
 // pages/StaffDashboard.tsx
 import { useState, useEffect } from "react";
 import { useAuth } from "../../contexts/AuthContext";
+import {
+  Search, RefreshCw, CheckCircle, XCircle, Package,
+  LayoutDashboard, Play, Check, AlertTriangle, LogOut, Minus
+} from "lucide-react";
 
 const API = "http://localhost:5000";
 type Section = "dashboard" | "parts";
@@ -77,11 +81,11 @@ function DashboardSection({ token }: { token: string }) {
       method: "PATCH", body: JSON.stringify({ status }),
     });
     setUpdatingId(null);
-    showToast(`✅ อัปเดตเป็น "${status}"`);
+    showToast(`อัปเดตเป็น "${status}"`);
     refetch();
   };
 
-  if (error) return <p className="text-red-400 text-sm">❌ โหลดไม่สำเร็จ: {error}</p>;
+  if (error) return <p className="text-red-400 text-sm flex items-center gap-1"><XCircle size={14}/> โหลดไม่สำเร็จ: {error}</p>;
 
   return (
     <div className="space-y-6">
@@ -113,7 +117,7 @@ function DashboardSection({ token }: { token: string }) {
         <div className="lg:col-span-2 bg-gray-900 rounded-2xl p-6 border border-gray-800">
           <div className="flex justify-between items-center mb-4">
             <h3 className="font-semibold">Assigned Builds</h3>
-            <button onClick={refetch} className="text-xs text-gray-400 hover:text-white bg-gray-800 px-3 py-1.5 rounded-lg transition">🔄</button>
+            <button onClick={refetch} className="text-xs text-gray-400 hover:text-white bg-gray-800 px-3 py-1.5 rounded-lg transition"><RefreshCw size={14}/></button>
           </div>
           {loading
             ? <div className="space-y-3">{Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-24" />)}</div>
@@ -140,14 +144,14 @@ function DashboardSection({ token }: { token: string }) {
                           <button onClick={() => updateStatus(o.WorkOrderID, "In Progress")}
                             disabled={updatingId === o.WorkOrderID}
                             className="text-xs px-3 py-1 bg-yellow-600 hover:bg-yellow-700 rounded-lg transition disabled:opacity-50">
-                            {updatingId === o.WorkOrderID ? "..." : "▶ Start"}
+                            {updatingId === o.WorkOrderID ? "..." : <><Play size={13} className="inline mr-1"/>Start</>}
                           </button>
                         )}
                         {o.Status === "In Progress" && (
                           <button onClick={() => updateStatus(o.WorkOrderID, "Completed")}
                             disabled={updatingId === o.WorkOrderID}
                             className="text-xs px-3 py-1 bg-green-600 hover:bg-green-700 rounded-lg transition disabled:opacity-50">
-                            {updatingId === o.WorkOrderID ? "..." : "✓ Complete"}
+                            {updatingId === o.WorkOrderID ? "..." : <><Check size={13} className="inline mr-1"/>Complete</>}
                           </button>
                         )}
                       </div>
@@ -162,11 +166,11 @@ function DashboardSection({ token }: { token: string }) {
         <div className="space-y-5">
           <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
             <h3 className="font-semibold mb-1">Low Stock Parts</h3>
-            <p className="text-xs text-gray-500 mb-4">📦 stock &lt; 5</p>
+            <p className="text-xs text-gray-500 mb-4 flex items-center gap-1"><AlertTriangle size={12}/> stock &lt; 5</p>
             {loading
               ? <div className="space-y-2">{Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-10" />)}</div>
               : lowStock.length === 0
-              ? <p className="text-gray-500 text-sm">✅ Stocks are fine</p>
+              ? <p className="text-gray-500 text-sm flex items-center gap-1"><CheckCircle size={14}/> Stocks are fine</p>
               : <div className="space-y-2">
                   {lowStock.map((p, i) => (
                     <div key={i} className="flex justify-between items-center bg-gray-800 px-3 py-2 rounded-xl text-sm">
@@ -224,7 +228,7 @@ function PartsSection({ token }: { token: string }) {
       method: "PATCH", body: JSON.stringify({ delta }),
     });
     if (!res.ok) { const j = await res.json(); alert(j.error); return; }
-    showToast("✅ อัปเดต Stock สำเร็จ");
+    showToast("อัปเดต Stock สำเร็จ");
     setStockPart(null);
     refetch();
   };
@@ -241,19 +245,19 @@ function PartsSection({ token }: { token: string }) {
       {stockPart && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
           <div className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-sm p-6 space-y-4">
-            <h2 className="text-lg font-semibold">📦 ปรับ Stock</h2>
+            <h2 className="text-lg font-semibold flex items-center gap-2"><Package size={18}/> ปรับ Stock</h2>
             <p className="text-sm text-gray-400">{stockPart.name}</p>
             <StockAdjust part={stockPart} onClose={() => setStockPart(null)} onAdjust={adjustStock} />
           </div>
         </div>
       )}
 
-      {error && <p className="text-red-400 text-sm">❌ โหลดไม่สำเร็จ: {error}</p>}
+      {error && <p className="text-red-400 text-sm flex items-center gap-1"><XCircle size={14}/> โหลดไม่สำเร็จ: {error}</p>}
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3 items-center">
         <input
-          placeholder="🔍 ค้นหา part..."
+          placeholder="ค้นหา part..."
           value={search}
           onChange={e => setSearch(e.target.value)}
           className="bg-gray-800 px-4 py-2 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-red-500 w-52"
@@ -266,7 +270,7 @@ function PartsSection({ token }: { token: string }) {
           <option value="all">ทุก Category</option>
           {safecats.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
-        <button onClick={refetch} className="ml-auto bg-gray-800 hover:bg-gray-700 px-3 py-2 rounded-xl text-sm transition">🔄</button>
+        <button onClick={refetch} className="ml-auto bg-gray-800 hover:bg-gray-700 px-3 py-2 rounded-xl text-sm transition"><RefreshCw size={14}/></button>
       </div>
 
       {/* Table */}
@@ -321,7 +325,7 @@ function PartsSection({ token }: { token: string }) {
                           onClick={() => setStockPart(part)}
                           className="text-xs px-3 py-1 bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 rounded-lg transition"
                         >
-                          📦 ปรับ
+                          <span className="flex items-center gap-1"><Package size={13}/> ปรับ</span>
                         </button>
                       </td>
                     </tr>
@@ -348,7 +352,7 @@ function StockAdjust({ part, onClose, onAdjust }: {
     <>
       <div className="flex items-center gap-4 justify-center py-2">
         <button onClick={() => setDelta(d => d - 1)}
-          className="w-10 h-10 bg-gray-800 hover:bg-gray-700 rounded-xl text-xl font-bold transition">−</button>
+          className="w-10 h-10 bg-gray-800 hover:bg-gray-700 rounded-xl text-xl font-bold transition"><Minus size={16}/></button>
         <div className="text-center">
           <p className="text-3xl font-bold">{newStock}</p>
           <p className="text-xs text-gray-500 mt-1">
@@ -374,8 +378,8 @@ function StockAdjust({ part, onClose, onAdjust }: {
 
 // ── Main ──────────────────────────────────────────────────
 const NAV: { label: string; section: Section; icon: string }[] = [
-  { label: "My Dashboard", section: "dashboard", icon: "▦"  },
-  { label: "Parts",        section: "parts",     icon: "📦" },
+  { label: "My Dashboard", section: "dashboard", icon: <LayoutDashboard size={16}/>  },
+  { label: "Parts",        section: "parts",     icon: <Package size={16}/> },
 ];
 
 export default function StaffDashboard() {
@@ -387,7 +391,7 @@ export default function StaffDashboard() {
       {/* Sidebar */}
       <aside className="w-60 bg-gray-900 border-r border-gray-800 p-6 flex flex-col flex-shrink-0">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-red-500">AutoPerf</h1>
+          <h1 className="text-2xl font-bold text-red-500">KU ZLING</h1>
           <p className="text-xs text-gray-400">Staff / Tuner Panel</p>
         </div>
         <nav className="space-y-1 text-sm flex-1">

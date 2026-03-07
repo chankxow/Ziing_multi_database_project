@@ -176,7 +176,7 @@ function VehiclesSection({ token }: { token: string }) {
     const res = await apiFetch("/customer/vehicles", token, { method:"POST", body:JSON.stringify({...form, year:parseInt(form.year)}) });
     const json = await res.json(); setSaving(false);
     if (!res.ok) { setFormErr(json.error); return; }
-    showToast("✅ เพิ่มรถสำเร็จ");
+    showToast("เพิ่มรถสำเร็จ");
     setShowAdd(false); setForm({make:"",model:"",year:"",color:"",license_plate:""}); setFormErr(""); refetch();
   };
 
@@ -185,7 +185,7 @@ function VehiclesSection({ token }: { token: string }) {
     const res = await apiFetch(`/customer/vehicles/${id}`, token, { method:"DELETE" });
     const json = await res.json();
     if (!res.ok) { alert(json.error); return; }
-    showToast("🗑 ลบรถสำเร็จ"); refetch();
+    showToast("ลบรถสำเร็จ"); refetch();
   };
 
   return (
@@ -272,7 +272,7 @@ function WorkOrdersSection({ token }: { token: string }) {
     });
     const json = await res.json(); setSaving(false);
     if (!res.ok) { setFormErr(json.error); return; }
-    showToast("✅ ส่งคำขอสำเร็จ ทีมงานจะติดต่อกลับเร็วๆ นี้");
+    showToast("ส่งคำขอสำเร็จ ทีมงานจะติดต่อกลับเร็วๆ นี้");
     setShowCreate(false); setForm({vehicle_id:"",description:""}); setFormErr(""); refetch();
   };
 
@@ -292,7 +292,7 @@ function WorkOrdersSection({ token }: { token: string }) {
           <h3 className="font-semibold">ส่งคำขอซ่อม / แต่งรถ</h3>
           {formErr && <p className="text-red-400 text-sm flex items-center gap-1"><AlertCircle size={13}/> {formErr}</p>}
           {vehicles.length === 0
-            ? <p className="text-yellow-400 text-sm">⚠️ กรุณาเพิ่มรถก่อนในหน้า "รถของฉัน"</p>
+            ? <p className="text-yellow-400 text-sm flex items-center gap-1"><AlertTriangle size={14}/> กรุณาเพิ่มรถก่อนในหน้า "รถของฉัน"</p>
             : <div className="space-y-3">
                 <div>
                   <label className="text-xs text-gray-400 mb-1 block">เลือกรถ *</label>
@@ -474,7 +474,7 @@ export default function CustomerDashboard() {
   const Sidebar = () => (
     <aside className="w-60 bg-gray-900 border-r border-gray-800 p-6 flex flex-col h-full">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-red-500">AutoPerf</h1>
+        <h1 className="text-2xl font-bold text-red-500">KU ZLING</h1>
         <p className="text-xs text-gray-400">Customer Portal</p>
       </div>
       <nav className="space-y-1 text-sm flex-1">
@@ -529,7 +529,7 @@ export default function CustomerDashboard() {
           <button onClick={() => setSidebarOpen(true)} className="text-gray-400 hover:text-white">
             <Menu size={20}/>
           </button>
-          <h1 className="text-lg font-bold text-red-500">AutoPerf</h1>
+          <h1 className="text-lg font-bold text-red-500">KU ZLING</h1>
           <span className="text-sm text-gray-400 ml-auto">{NAV.find(n => n.section === active)?.label}</span>
         </div>
 
