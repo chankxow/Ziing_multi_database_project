@@ -1,7 +1,7 @@
 import bcrypt
 import pymysql
 
-conn = pymysql.connect(host="localhost", user="root", password="Finemotion175%", database="CarCustomShop")
+conn = pymysql.connect(host="localhost", user="root", password="YOURPASSWORD", database="CarCustomShop")
 cur = conn.cursor()
 
 username  = "admin_"
