@@ -1,10 +1,11 @@
 // pages/AdminDashboard.tsx
 import { useState, useEffect } from "react";
+import React from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import {
-  Search, RefreshCw, CheckCircle, XCircle, Package, LayoutDashboard,
+  RefreshCw,  XCircle, Package, LayoutDashboard,
   Wrench, Users, Plus, Trash2, AlertTriangle, Edit, Play, Check,
-  X, ChevronRight, LogOut, Database, Ban
+  X,  LogOut, Database, Minus
 } from "lucide-react";
 
 const API = "http://localhost:5000";
@@ -912,7 +913,7 @@ function StaffSection({ token }: { token: string }) {
 }
 
 // ── Main ──────────────────────────────────────────────────
-const NAV: { label: string; section: Section; icon: string }[] = [
+const NAV: { label: string; section: Section; icon: React.ReactNode }[] = [
   { label: "Dashboard",         section: "dashboard",  icon: <LayoutDashboard size={16}/>  },
   { label: "Work Orders",       section: "workorders", icon: <Wrench size={16}/> },
   { label: "Parts & Inventory", section: "parts",      icon: <Package size={16}/> },

@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import {
   LayoutDashboard, Car, Wrench, Package, LogOut,
-  RefreshCw, AlertCircle, Plus, X, Menu
+  RefreshCw, AlertCircle, AlertTriangle, Plus, X, Menu
 } from "lucide-react";
 
 const API = "http://localhost:5000";
