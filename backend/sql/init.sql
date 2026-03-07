@@ -1,15 +1,6 @@
 CREATE DATABASE CarCustomShop;
 USE CarCustomShop;
 
-
-ALTER TABLE User ADD COLUMN CustomerID INT NULL;
-ALTER TABLE User ADD CONSTRAINT fk_user_customer 
-  FOREIGN KEY (CustomerID) REFERENCES Customer(CustomerID);
-
--- เพิ่ม Role Customer 
-INSERT IGNORE INTO Role (RoleName) VALUES ('Customer');
-
-
 -- 1. Create Role table
 CREATE TABLE IF NOT EXISTS Role (
     RoleID INT AUTO_INCREMENT PRIMARY KEY,
@@ -96,3 +87,10 @@ INSERT INTO Vehicle (CustomerID, Make, Model, Year, Color, LicensePlate) VALUES
 INSERT INTO WorkOrder (VehicleID, UserID, Description, Status, TotalCost) VALUES 
 (1, 3, 'เปลี่ยนถ่ายน้ำมันเครื่องและเช็คระยะ', 'Completed', 2500.00),
 (2, 2, 'ติดตั้งชุดแต่งสเกิร์ตรอบคัน', 'In Progress', 15000.00);
+
+ALTER TABLE User ADD COLUMN CustomerID INT NULL;
+ALTER TABLE User ADD CONSTRAINT fk_user_customer 
+  FOREIGN KEY (CustomerID) REFERENCES Customer(CustomerID);
+
+-- เพิ่ม Role Customer 
+INSERT IGNORE INTO Role (RoleName) VALUES ('Customer');
