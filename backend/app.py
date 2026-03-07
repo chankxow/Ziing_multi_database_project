@@ -532,7 +532,7 @@ def get_parts():
 
 @app.route("/parts/categories", methods=["GET"])
 @token_required
-@role_required(1, 2, 3)
+@role_required(1, 2, 3, 4)
 def get_parts_categories():
     """GET /parts/categories — รายชื่อ category ทั้งหมด"""
     try:
@@ -837,7 +837,7 @@ def customer_get_parts():
         cat    = request.args.get("category")
         search = request.args.get("search")
         if cat:    qf["category"] = cat
-        if search: qf["name"] = {"": search, "": "i"}
+        if search: qf["name"] = {"$regex": search, "$options": "i"}
         parts = list(col.find(qf, {"_id": 0, "part_id": 1, "name": 1, "category": 1, "brand": 1, "compatible_models": 1, "stock": 1}))
         return jsonify(parts)
     except Exception as e:
