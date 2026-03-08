@@ -1,234 +1,297 @@
-# 🚗 Car Customization Project - Multi-Database System
+# 📖 เอกสารโครงการ Ziing Multi-Database (ฉบับภาษาไทย)
 
-## Project Overview
-
-This is a Full-Stack application for managing a car customization shop using modern technologies:
-- **Backend**: Flask (Python)
-- **Databases**: MySQL + MongoDB (Localhost)
-- **Frontend**: React + TypeScript + Vite
-- **Infrastructure**: Local Development Only (No Docker)
-
-### Purpose
-Manage customers, vehicles, parts, and work orders using databases optimized for each data type.
+## 📋 สารบัญ
+1. [ภาพรวมโครงการ](#ภาพรวมโครงการ)
+2. [โครงสร้างไฟล์และโฟลเดอร์](#โครงสร้างไฟล์และโฟลเดอร์)
+3. [สถาปัตยกรรมฐานข้อมูล](#สถาปัตยกรรมฐานข้อมูล)
+4. [การติดตั้งและตั้งค่า](#การติดตั้งและตั้งค่า)
+5. [การใช้งานระบบ](#การใช้งานระบบ)
+6. [API Endpoints](#api-endpoints)
+7. [ทีมผู้พัฒนา](#ทีมผู้พัฒนา)
 
 ---
 
-## 🚀 Quick Start
+## ภาพรวมโครงการ
 
-### ✅ Local Development Setup (Standalone)
+**ZLing Multi-Database Project** เป็นแอปพลิเคชัน สำหรับจัดการร้านตกแต่งรถยนต์ ที่ใช้เทคโนโลยีสมัยใหม่:
 
-**Prerequisites:**
-- Python 3.8+
-- Node.js 16+
-- MySQL Server (running on localhost:3306)
-- MongoDB (running on localhost:27017)
+### 🛠️ เทคโนโลยีที่ใช้
+- **Backend**: Flask (Python)
+- **Frontend**: React + TypeScript + Vite
+- **ฐานข้อมูล**: MySQL + MongoDB (Multi-Database)
+- **ระบบปฏิบัติการ**: Local Development (ไม่ใช้ Docker)
 
-### 📋 Setup Instructions
+### 🎯 วัตถุประสงค์
+- จัดการข้อมูลลูกค้า (Customers)
+- จัดการข้อมูลยานพาหนะ (Vehicles) 
+- จัดการคำสั่งงาน (Work Orders)
+- จัดการข้อมูลชิ้นส่วนและอุปกรณ์ (Parts)
+- จัดการผู้ใช้งานระบบ (Users)
 
-**Step 1: Start Databases**
+---
+
+## โครงสร้างไฟล์และโฟลเดอร์
+
+```
+ZLing_multi_database_project/
+├── 📁 backend/                    # Backend Flask Application
+│   ├── 🐍 app.py                 # ไฟล์หลักของ Flask Application
+│   ├── 🔧 config.py              # การตั้งค่า Environment
+│   ├── 🗄️ db_mysql.py            # ตัวเชื่อมต่อฐานข้อมูล MySQL
+│   ├── 🍃 db_mongo.py            # ตัวเชื่อมต่อฐานข้อมูล MongoDB
+│   ├── 📄 requirements.txt        # Dependencies ของ Python
+│   ├── 📁 sql/                   # สคริปต์สร้างฐานข้อมูล MySQL
+│   │   └── 📄 init.sql          # สคริปต์เริ่มต้น MySQL
+│   ├── 🔑 .env                   # ตัวแปรสภาพแวดล้อม (ไม่ติดตาม Git)
+│   └── 📝 .env.example           # ตัวอย่างไฟล์ .env
+│
+├── 📁 frontend/                   # Frontend React Application
+│   ├── 📁 src/                   # โค้ด React Components
+│   │   ├── 📁 components/       # คอมโพเนนต์ต่างๆ
+│   │   ├── 📁 pages/            # หน้าต่างๆ
+│   │   └── 📄 App.tsx           # ไฟล์หลักของ React
+│   ├── 📁 public/                # ไฟล์ Static
+│   ├── 📄 index.html             # ไฟล์ HTML หลัก
+│   ├── 📦 package.json           # Dependencies ของ Node.js
+│   ├── ⚙️ vite.config.ts         # การตั้งค่า Vite
+│   ├── 📘 tsconfig.json          # การตั้งค่า TypeScript
+│   └── 🔑 .env                   # ตัวแปรสภาพแวดล้อม Frontend
+│
+├── 📁 IMG/                        # รูปภาพและเอกสาร
+│   └── 📄 KU_ZLING_Schema.pdf    # แผนผังโครงสร้างฐานข้อมูล
+│
+├── 📄 README.md                   # README ภาษาอังกฤษ
+├── 📄 README_TH.md               # README ภาษาไทย (ไฟล์นี้)
+├── 📄 Documentation.md           # เอกสารประกอบฉบับเต็ม
+├── 📄 update.md                  # บันทึกการอัปเดต
+├── 🐍 hash.py                    # ยูทิลิตี้แฮชรหัสผ่าน
+├── 📦 requirements.txt           # Python Dependencies หลัก
+├── 🚫 .gitignore                 # กฎการ ignore ไฟล์ Git
+└── 🔧 .env.example               # ตัวอย่างตัวแปรสภาพแวดล้อม
+```
+
+---
+
+## สถาปัตยกรรมฐานข้อมูล
+
+### 🗄️ MySQL - ข้อมูลเชิงสัมพันธ์ (Relational Data)
+**ที่อยู่**: `localhost:3306`  
+**Database**: `CarCustomShop`
+
+#### ตารางหลัก:
+1. **Role** - บทบาทผู้ใช้งาน
+   - RoleID (PK), RoleName
+
+2. **User** - ผู้ใช้งานระบบ (พนักงาน)
+   - UserID (PK), Username, PasswordHash, FirstName, LastName, RoleID (FK)
+
+3. **Customer** - ข้อมูลลูกค้า
+   - CustomerID (PK), FirstName, LastName, Phone, Email
+
+4. **Vehicle** - ข้อมูลยานพาหนะ
+   - VehicleID (PK), CustomerID (FK), Make, Model, Year, Color, LicensePlate
+
+5. **WorkOrder** - คำสั่งงาน
+   - WorkOrderID (PK), VehicleID (FK), UserID (FK), Description, Status, TotalCost
+
+### 🍃 MongoDB - ข้อมูลแบบเอกสาร (Document Data)
+**ที่อยู่**: `localhost:27017`  
+**Database**: `CarCustomShop`
+
+#### Collection หลัก:
+1. **parts** - ข้อมูลชิ้นส่วนและอุปกรณ์
+   ```json
+   {
+     "part_id": "P001",
+     "name": "ยางรถยนต์ Bridgestone",
+     "category": "ยางรถยนต์",
+     "price": 3500.00,
+     "stock": 15,
+     "specifications": {
+       "size": "205/55R16",
+       "brand": "Bridgestone",
+       "type": "Tubeless"
+     }
+   }
+   ```
+
+### 📊 แผนผังโครงสร้างฐานข้อมูล
+
+![Database Schema](IMG/KU_ZLING_Schema.pdf)
+
+**คำอธิบายแผนผัง:**
+- **MySQL** (ด้านซ้าย): จัดเก็บข้อมูลที่มีความสัมพันธ์ชัดเจน เช่น ลูกค้า-ยานพาหนะ-คำสั่งงาน
+- **MongoDB** (ด้านขวา): จัดเก็บข้อมูลที่มีโครงสร้างยืดหยุ่น เช่น ข้อมูลชิ้นส่วนที่มีสเปคเฉพาะ
+- **การเชื่อมโยง**: WorkOrder เชื่อมโยงกับทั้ง Vehicle (MySQL) และ Parts (MongoDB) ผ่าน API
+
+---
+
+## การติดตั้งและตั้งค่า
+
+### ✅ ข้อกำหนดเบื้องต้น
+- **Python 3.8+**
+- **Node.js 16+** 
+- **MySQL Server 8.0+**
+- **MongoDB Community**
+
+### 🚀 การติดตั้งแบบรวดเร็ว
+
+#### ขั้นตอนที่ 1: ตรวจสอบฐานข้อมูล
 ```bash
-# Make sure MySQL and MongoDB services are running
+# ตรวจสอบว่า MySQL และ MongoDB ทำงานอยู่
 # MySQL: localhost:3306
 # MongoDB: localhost:27017
 ```
 
-**Step 2: Start Backend**
+#### ขั้นตอนที่ 2: ติดตั้ง Backend
 ```bash
 cd backend
 pip install -r requirements.txt
 python app.py
-# Backend runs on http://localhost:5000
+# Backend จะทำงานที่ http://localhost:5000
 ```
 
-**Step 3: Start Frontend**
+#### ขั้นตอนที่ 3: ติดตั้ง Frontend
 ```bash
 cd frontend
 npm install
 npm run dev
-# Frontend runs on http://localhost:5173
+# Frontend จะทำงานที่ http://localhost:5173
 ```
 
-### Access Services
-- **Backend API**: http://localhost:5000
+### 🔧 การตั้งค่าฐานข้อมูล
+
+#### MySQL
+```bash
+# สร้างฐานข้อมูล
+mysql -u root -p -e "CREATE DATABASE CarCustomShop;"
+
+# นำเข้าโครงสร้างตาราง
+mysql -u root -p CarCustomShop < backend/sql/init.sql
+```
+
+#### MongoDB
+```bash
+# เชื่อมต่อและสร้าง collection
+mongosh
+use CarCustomShop
+db.createCollection('parts')
+```
+
+### 🌐 การเข้าถึงระบบ
 - **Frontend**: http://localhost:5173
+- **Backend API**: http://localhost:5000
 - **MySQL**: localhost:3306
 - **MongoDB**: localhost:27017
 
 ---
 
-## 📦 Project Structure
+## การใช้งานระบบ
 
-```
-Ziing_multi_database_project/
-├── backend/                    # Flask Backend
-│   ├── app.py                 # Main application file
-│   ├── config.py              # Environment configuration
-│   ├── db_mysql.py            # MySQL connector
-│   ├── db_mongo.py            # MongoDB connector
-│   ├── requirements.txt        # Python dependencies
-│   ├── sql/                   # Database initialization scripts
-│   ├── .env                   # Environment variables (not tracked)
-│   └── .env.example           # Example environment file
-│
-├── frontend/                   # React + TypeScript + Vite
-│   ├── src/                   # React components
-│   ├── public/                # Static files
-│   ├── index.html             # Main HTML file
-│   ├── package.json           # Node.js dependencies
-│   ├── vite.config.ts         # Vite configuration
-│   ├── tsconfig.json          # TypeScript configuration
-│   └── .env                   # Environment variables
-│
-├── docker-compose.yml         # Docker configuration (reference only)
-├── .gitignore                 # Git ignore rules
-├── .env.example               # Example environment file
-├── README.md                  # This file
-└── Documentation.md           # Full documentation
+### 📱 ฟังก์ชันหลักของระบบ
 
-```
+1. **การจัดการลูกค้า**
+   - เพิ่ม/แก้ไข/ลบข้อมูลลูกค้า
+   - ค้นหาลูกค้าตามชื่อหรือเบอร์โทร
+
+2. **การจัดการยานพาหนะ**
+   - บันทึกข้อมูลรถของลูกค้า
+   - ติดตามประวัติการซ่อมบำรุง
+
+3. **การจัดการคำสั่งงาน**
+   - สร้างคำสั่งงานใหม่
+   - ติดตามสถานะการดำเนินงาน
+   - คำนวณค่าใช้จ่าย
+
+4. **การจัดการชิ้นส่วน**
+   - เพิ่มข้อมูลชิ้นส่วนใหม่
+   - ตรวจสอบสต็อกสินค้า
+   - จัดการราคาและสเปค
+
+### 👥 บทบาทผู้ใช้งาน
+- **Admin**: จัดการทุกอย่างในระบบ
+- **Mechanic**: ดูและอัปเดตคำสั่งงาน
+- **Receptionist**: จัดการลูกค้าและคำสั่งงานใหม่
+- **Customer**: ดูสถานะคำสั่งงานของตนเอง
 
 ---
 
-## 🗄️ Databases
+## API Endpoints
 
-### MySQL - Relational Data (localhost:3306)
-Used for:
-- **Customers**: Personal information, contact details
-- **Vehicles**: Model, year, license plate
-- **WorkOrders**: Job details, status, cost
+### 🔗 หมวดหมู่ API
 
-### MongoDB - Flexible Data (localhost:27017)
-Used for:
-- **Parts**: Part information, prices, inventory
+| วิธี | Endpoint | คำอธิบาย |
+|------|----------|-----------|
+| GET | `/` | ตรวจสอบสถานะเซิร์ฟเวอร์ |
+| | | |
+| **ลูกค้า (MySQL)** | | |
+| GET | `/customers` | ดูข้อมูลลูกค้าทั้งหมด |
+| POST | `/customers` | เพิ่มลูกค้าใหม่ |
+| GET | `/customers/{id}` | ดูข้อมูลลูกค้ารายคน |
+| | | |
+| **ยานพาหนะ (MySQL)** | | |
+| GET | `/vehicles` | ดูข้อมูลยานพาหนะทั้งหมด |
+| POST | `/vehicles` | เพิ่มยานพาหนะใหม่ |
+| | | |
+| **คำสั่งงาน (MySQL)** | | |
+| GET | `/workorders` | ดูคำสั่งงานทั้งหมด |
+| POST | `/workorders` | สร้างคำสั่งงานใหม่ |
+| | | |
+| **ชิ้นส่วน (MongoDB)** | | |
+| GET | `/parts` | ดูชิ้นส่วนทั้งหมด |
+| POST | `/parts` | เพิ่มชิ้นส่วนใหม่ |
+| | | |
+| **ผู้ใช้งาน (MySQL)** | | |
+| GET | `/users` | ดูผู้ใช้งานทั้งหมด |
+| POST | `/login` | เข้าสู่ระบบ |
 
----
+### 📝 ตัวอย่างการใช้ API
 
-## 📡 API Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|---|
-| GET | `/` | Server health check |
-| GET | `/customers` | Get all customers |
-| POST | `/customers` | Add new customer |
-| GET | `/vehicles` | Get all vehicles |
-| GET | `/workorders` | Get all work orders |
-| GET | `/parts` | Get all parts (MongoDB) |
-| POST | `/parts` | Add new part (MongoDB) |
-
----
-
-## 🐳 Docker Commands
-
-### Start Services
 ```bash
-docker-compose up -d
-```
+# ตรวจสอบสถานะเซิร์ฟเวอร์
+curl http://localhost:5000/
 
-### Check Service Status
-```bash
-docker-compose ps
-```
+# เพิ่มลูกค้าใหม่
+curl -X POST http://localhost:5000/customers \
+  -H "Content-Type: application/json" \
+  -d '{
+    "FirstName":"สมชาย",
+    "LastName":"ใจดี", 
+    "Phone":"0812345678",
+    "Email":"somchai@example.com"
+  }'
 
-### View Logs
-```bash
-# All services
-docker-compose logs -f
-
-# Specific service
-docker-compose logs -f backend
-docker-compose logs -f mysql
-docker-compose logs -f mongodb
-```
-
-### Access Databases
-```bash
-# MySQL
-docker-compose exec mysql mysql -u shopuser -pshoppass CarCustomShop
-
-# MongoDB
-docker-compose exec mongodb mongosh admin --username admin --password adminpass
-```
-
-### Stop Services
-```bash
-# Stop all
-docker-compose down
-
-# Remove all data (WARNING: deletes databases)
-docker-compose down -v
+# ดูข้อมูลชิ้นส่วนทั้งหมด
+curl http://localhost:5000/parts
 ```
 
 ---
 
-## 🔧 Configuration
+## ทีมผู้พัฒนา
 
-### .env File for Environment Variables
-```env
-# Flask Configuration
-FLASK_ENV=development
-FLASK_DEBUG=1
-FLASK_APP=app.py
+### 👥 สมาชิกทีม
+- **Chankxow** - Backend Developer
+- **puriwat2953** - Frontend Developer  
+- **Ampser** - Database Designer
 
-# MySQL Configuration (Localhost)
-MYSQL_HOST=localhost
-MYSQL_PORT=3307
-MYSQL_USER=shopuser
-MYSQL_PASSWORD=shoppass
-MYSQL_DB=CarCustomShop
-
-# MongoDB Configuration (Localhost)
-MONGO_HOST=localhost
-MONGO_PORT=27017
-MONGO_DB=CarCustomShop
-```
+### 📞 การติดต่อ
+- **Project Repository**: Ziing Multi-Database Project
+- **Documentation**: ดูไฟล์ `Documentation.md` สำหรับเอกสารฉบับเต็ม
+- **Support**: ตรวจสอบ logs ใน terminal ของ backend และ frontend
 
 ---
 
-## 🔒 Security
+## 📝 หมายเหตุ
 
-- **Do not share .env files** in version control
-- **Change passwords** in environment configuration
-- **Never hardcode credentials** in code
-- Use `.gitignore` to prevent sensitive files from being tracked
-
----
-
-## 🤝 Contributing
-
-1. Create a feature branch: `git checkout -b feature/your-feature`
-2. Commit changes: `git commit -m 'Add some feature'`
-3. Push to branch: `git push origin feature/your-feature`
-4. Open a Pull Request
+โครงการนี้พัฒนาขึ้นเพื่อการศึกษาเกี่ยวกับ:
+- 🔄 Multi-Database Systems
+- 🐳 Docker & Container Technology  
+- 🌐 Full-Stack Development
+- 🐍 Python Flask Framework
+- ⚛️ React TypeScript Development
 
 ---
 
-## 👥 Team Members
-
-- **Chankxow**: Dev
-- **puriwat2953**: Dev
-- **Ampser**: Dev
-
----
-
-## 💡 Note
-
-This project was created for educational purposes to understand:
-- Multi-Database Systems
-- Docker & Container Technology
-- Full-Stack Development
-- Python Flask Framework
-- React TypeScript Development
-
----
-
-## 📞 Support
-
-If you have questions or issues:
-1. Check the Docker logs with `docker-compose logs -f`
-2. Verify all services are running with `docker-compose ps`
-3. Create an issue with detailed description
-
----
-
-**Last Updated**: February 2026
-**Version**: 0.0.3B-T (Localhost Only)
+**📅 อัปเดตล่าสุด**: มีนาคม 2026  
+**🔢 เวอร์ชัน**: 0.0.3B-T (Localhost Only)  
+**✅ สถานะ**: พร้อมใช้งาน

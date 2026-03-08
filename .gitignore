@@ -1,6 +1,7 @@
 # =========================
 # 🔒 SECRETS & CREDENTIALS (ต้องซ่อน!)
 # =========================
+.venv
 .env
 .env.local
 .env.*.local
