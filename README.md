@@ -117,7 +117,7 @@ ZLing_multi_database_project/
 
 ### 📊 แผนผังโครงสร้างฐานข้อมูล
 
-![Database Schema](IMG/KU_ZLING_Schema.pdf)
+<img src="/IMG/" style="width:50%; height:50%;">
 
 **คำอธิบายแผนผัง:**
 - **MySQL** (ด้านซ้าย): จัดเก็บข้อมูลที่มีความสัมพันธ์ชัดเจน เช่น ลูกค้า-ยานพาหนะ-คำสั่งงาน
