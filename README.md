@@ -148,6 +148,15 @@ ZLing_multi_database_project/
 #### ขั้นตอนที่ 2: ติดตั้ง Backend
 ```bash
 cd backend
+python3 -m venv .venv
+# สร้าง environment จำลอง
+
+source .venv/script/activate
+#linux
+
+.\venv\Scripts\Activate.ps1
+# Windows (PowerShell):
+
 pip install -r requirements.txt
 python app.py
 # Backend จะทำงานที่ http://localhost:5000
