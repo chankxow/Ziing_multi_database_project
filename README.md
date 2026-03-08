@@ -1,4 +1,4 @@
-# 📖 เอกสารโครงการ Ziing Multi-Database (ฉบับภาษาไทย)
+# 📖 เอกสารโครงการ ZLING Multi-Database (ฉบับภาษาไทย)
 
 ## 📋 สารบัญ
 <a href="DB_Design_Document-3.pdf">เอกสารนำส่งการออกแบบฐานข้อมูล </a>
@@ -277,7 +277,7 @@ curl http://localhost:5000/parts
 - **Ampser** - Database Designer
 
 ### 📞 การติดต่อ
-- **Project Repository**: Ziing Multi-Database Project
+- **Project Repository**: ZLING Multi-Database Project
 - **Documentation**: ดูไฟล์ `Documentation.md` สำหรับเอกสารฉบับเต็ม
 - **Support**: ตรวจสอบ logs ใน terminal ของ backend และ frontend
 
