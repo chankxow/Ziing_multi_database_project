@@ -1,7 +1,11 @@
 import pytest
 from app import app as flask_app
 from unittest.mock import MagicMock
+# conftest.py  ← วางไว้ที่ root ของ repo
+import sys
+import os
 
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 @pytest.fixture
 def client():
     flask_app.config["TESTING"] = True
