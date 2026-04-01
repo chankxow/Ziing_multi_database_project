@@ -27,3 +27,4 @@ redis==5.0.0
 SQLAlchemy==2.0.46
 typing_extensions==4.15.0
 Werkzeug==3.1.5
+requests==2.31.0
