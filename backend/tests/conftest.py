@@ -5,8 +5,13 @@ from unittest.mock import MagicMock
 @pytest.fixture
 def client():
     flask_app.config["TESTING"] = True
-    return flask_app.test_client()
+    with flask_app.test_client() as client:
+        yield client
 
+        
+def test_example(client):
+    res = client.get("/")
+    assert res.status_code == 200
 
 # ✅ Mock MySQL
 @pytest.fixture
