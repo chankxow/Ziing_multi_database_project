@@ -2,9 +2,9 @@ name: Run Tests
 
 on:
   push:
-    branches: [ main ]
+    branches: [ "**" ]
   pull_request:
-    branches: [ main ]
+    branches: [ "**" ]
 
 jobs:
   test:
@@ -24,4 +24,4 @@ jobs:
       - name: Run tests
         run: pytest tests/
         env:
-          PYTHONPATH: ${{ github.workspace }}  # ← แก้ปัญหา no module 'app'
+          PYTHONPATH: ${{ github.workspace }}
