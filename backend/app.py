@@ -14,7 +14,10 @@ from functools import wraps
 
 app = Flask(__name__)
 CORS(app)
-check_db_connection()
+import os
+
+if os.getenv("TESTING") != "true" and os.getenv("SKIP_DB_CHECK") != "true":
+    check_db_connection()
 
 # =========================
 # JWT Middleware
@@ -70,7 +73,7 @@ def login():
         return jsonify({"error": "Invalid JSON"}), 400
     try:
         user = query(
-            "SELECT u.*, r.RoleName FROM User u JOIN Role r ON u.RoleID = r.RoleID WHERE u.Username = %s",
+            "SELECT u.*, r.RoleName FROM user u JOIN role r ON u.RoleID = r.RoleID WHERE u.Username = %s",
             (body["username"],)
         )
         if not user:
@@ -851,18 +854,18 @@ def register_customer():
         for f in ["username", "password", "firstName", "lastName"]:
             if not b.get(f):
                 return jsonify({"error": f"Missing: {f}"}), 400
-        if query("SELECT UserID FROM User WHERE Username = %s", (b["username"],)):
+        if query("SELECT UserID FROM user WHERE Username = %s", (b["username"],)):
             return jsonify({"error": "Username already exists"}), 400
-        execute("INSERT INTO Customer (FirstName, LastName, Phone, Email) VALUES(%s,%s,%s,%s)",
+        execute("INSERT INTO customer (FirstName, LastName, Phone, Email) VALUES(%s,%s,%s,%s)",
                 (b["firstName"], b["lastName"], b.get("phone",""), b.get("email","")))
-        customer_id = query("SELECT LAST_INSERT_ID() AS id")[0]["id"]
+        customer_id = query("SELECT MAX(CustomerID) as id FROM customer")[0]["id"]
         hashed = bcrypt.hashpw(b["password"].encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
-        execute("INSERT INTO User (Username,PasswordHash,FirstName,LastName,RoleID,CustomerID) VALUES(%s,%s,%s,%s,%s,%s)",
+        execute("INSERT INTO user (Username,PasswordHash,FirstName,LastName,RoleID,CustomerID) VALUES(%s,%s,%s,%s,%s,%s)",
                 (b["username"], hashed, b["firstName"], b["lastName"], 4, customer_id))
         return jsonify({"status": "registered", "customer_id": customer_id}), 201
-    except Exception:
+    except Exception as e:
         traceback.print_exc()
-        return jsonify({"error": "Failed"}), 500
+        return jsonify({"error": f"Registration failed: {str(e)}"}), 500
 @app.errorhandler(Exception)
 def handle_error(e):
     traceback.print_exc()
