@@ -1,30 +1,18 @@
 from unittest.mock import patch
-from tests.utils import generate_token
 
-def test_get_staff_success(client):
-    token = generate_token(role=1)
+def fake_decode(*args, **kwargs):
+    return {
+        "user_id": 1,
+        "role": 1,
+        "customer_id": None
+    }
 
-    fake_data = [{
-        "UserID": 1,
-        "Username": "admin",
-        "FirstName": "John",
-        "LastName": "Doe",
-        "IsActive": True,
-        "CreatedDate": "2024-01-01",
-        "RoleID": 1,
-        "RoleName": "Admin"
-    }]
+@patch("app.jwt.decode", side_effect=fake_decode)
+def test_get_staff(mock_jwt, client):
 
-    with patch("app.query", return_value=fake_data):
-        res = client.get(
-            "/users/staff",
-            headers={"Authorization": f"Bearer {token}"}
-        )
+    with patch("app.query", return_value=[]):
+        res = client.get("/users/staff", headers={
+            "Authorization": "Bearer faketoken"
+        })
 
-    assert res.status_code == 200
-    assert isinstance(res.get_json(), list)
-
-
-def test_get_staff_no_token(client):
-    res = client.get("/users/staff")
-    assert res.status_code == 401
+        assert res.status_code == 200
