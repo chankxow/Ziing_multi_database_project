@@ -8,7 +8,7 @@ import {
   X,  LogOut, Database, Minus
 } from "lucide-react";
 
-import API_BASE_URL from "../config/api";
+import API_BASE_URL from "../../config/api";
 const API = API_BASE_URL;
 type Section = "dashboard" | "workorders" | "parts" | "staff";
 

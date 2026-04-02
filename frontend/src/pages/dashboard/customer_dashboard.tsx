@@ -6,7 +6,7 @@ import {
   RefreshCw, AlertCircle, AlertTriangle, Plus, X, Menu
 } from "lucide-react";
 
-import API_BASE_URL from "../config/api";
+import API_BASE_URL from "../../config/api";
 const API = API_BASE_URL;
 type Section = "dashboard" | "vehicles" | "workorders" | "parts";
 
