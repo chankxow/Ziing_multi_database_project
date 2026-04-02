@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 import traceback
-from db_mysql import query, execute
+from db_mysql import query, execute, get_connection
 from db_mongo import get_parts_collection
 from config import check_db_connection
 
@@ -855,7 +855,6 @@ def register_customer():
             return jsonify({"error": "Username already exists"}), 400
 
         # ใช้ connection เดียวกันเพื่อให้ lastrowid ถูกต้อง
-        from db_mysql import get_connection
         conn = get_connection()
         try:
             with conn.cursor() as cursor:
