@@ -1,9 +1,9 @@
 // pages/StaffDashboard.tsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import {
-  Search, RefreshCw, CheckCircle, XCircle, Package,
-  LayoutDashboard, Play, Check, AlertTriangle, LogOut, Minus
+  RefreshCw, CheckCircle, XCircle, Package,
+  LayoutDashboard, Play, Check, AlertTriangle, Minus
 } from "lucide-react";
 
 import API_BASE_URL from "../config/api";
@@ -378,7 +378,7 @@ function StockAdjust({ part, onClose, onAdjust }: {
 }
 
 // ── Main ──────────────────────────────────────────────────
-const NAV: { label: string; section: Section; icon: string }[] = [
+const NAV: { label: string; section: Section; icon: ReactNode }[] = [
   { label: "My Dashboard", section: "dashboard", icon: <LayoutDashboard size={16}/>  },
   { label: "Parts",        section: "parts",     icon: <Package size={16}/> },
 ];
