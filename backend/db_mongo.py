@@ -1,17 +1,22 @@
 from pymongo import MongoClient
 from config import MONGO_URI, MONGO_DB
 
+# Global connection state
+client = None
+mongo_db = None
+parts_collection = None
+
 def get_mongo_client():
     """สร้างและส่งคืน MongoDB client"""
     try:
-        mongo_client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
-        # Test the connection
-        mongo_client.admin.command('ping')
-        print(f"✅ MongoDB connected to {MONGO_URI}")
-        return mongo_client
+        # Log URI แบบซ่อน password เพื่อความปลอดภัย
+        safe_uri = MONGO_URI.split("@")[-1] if MONGO_URI and "@" in MONGO_URI else MONGO_URI
+        mc = MongoClient(MONGO_URI, serverSelectionTimeoutMS=10000)
+        mc.admin.command("ping")
+        print(f"✅ MongoDB connected: ...@{safe_uri}")
+        return mc
     except Exception as e:
         print(f"❌ MongoDB connection error: {e}")
-        print(f"   Trying to connect to: {MONGO_HOST}:{MONGO_PORT}")
         raise
 
 def ensure_connection():
@@ -23,7 +28,6 @@ def ensure_connection():
         parts_collection = mongo_db["parts"]
     return parts_collection
 
-# Export function to be used in routes
 def get_parts_collection():
     """ดึง parts collection"""
     return ensure_connection()
