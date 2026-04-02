@@ -853,12 +853,27 @@ def register_customer():
                 return jsonify({"error": f"Missing: {f}"}), 400
         if query("SELECT UserID FROM User WHERE Username = %s", (b["username"],)):
             return jsonify({"error": "Username already exists"}), 400
-        execute("INSERT INTO Customer (FirstName, LastName, Phone, Email) VALUES(%s,%s,%s,%s)",
-                (b["firstName"], b["lastName"], b.get("phone",""), b.get("email","")))
-        customer_id = query("SELECT LAST_INSERT_ID() AS id")[0]["id"]
-        hashed = bcrypt.hashpw(b["password"].encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
-        execute("INSERT INTO User (Username,PasswordHash,FirstName,LastName,RoleID,CustomerID) VALUES(%s,%s,%s,%s,%s,%s)",
-                (b["username"], hashed, b["firstName"], b["lastName"], 4, customer_id))
+
+        # ใช้ connection เดียวกันเพื่อให้ lastrowid ถูกต้อง
+        from db_mysql import get_connection
+        conn = get_connection()
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    "INSERT INTO Customer (FirstName, LastName, Phone, Email) VALUES(%s,%s,%s,%s)",
+                    (b["firstName"], b["lastName"], b.get("phone",""), b.get("email",""))
+                )
+                customer_id = cursor.lastrowid   # ✅ ถูกต้อง — ใช้ lastrowid แทน LAST_INSERT_ID()
+
+                hashed = bcrypt.hashpw(b["password"].encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+                cursor.execute(
+                    "INSERT INTO User (Username,PasswordHash,FirstName,LastName,RoleID,CustomerID) VALUES(%s,%s,%s,%s,%s,%s)",
+                    (b["username"], hashed, b["firstName"], b["lastName"], 4, customer_id)
+                )
+            conn.commit()
+        finally:
+            conn.close()
+
         return jsonify({"status": "registered", "customer_id": customer_id}), 201
     except Exception:
         traceback.print_exc()
