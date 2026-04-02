@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: ziing-backend
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: SKIP_PORT_CHECK
+        value: "true"
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      # ⚠️ ตั้งค่า secrets เหล่านี้ใน Render Dashboard → Environment Variables
+      # - key: MYSQL_URL
+      #   value: mysql://user:pass@aiven-host:port/CarCustomShop
+      # - key: MONGO_URI
+      #   value: mongodb+srv://user:pass@cluster.mongodb.net/CarCustomShop
+      # - key: JWT_SECRET_KEY
+      #   value: your-super-secret-key

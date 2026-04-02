@@ -1,102 +1,100 @@
 import os
 import time
 import socket
+from urllib.parse import urlparse
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
 load_dotenv()
 
+# ==========================================
 # MySQL Configuration
-MYSQL_HOST = os.getenv("MYSQL_HOST", "localhost")
-MYSQL_PORT = int(os.getenv("MYSQL_PORT", 3306))
-MYSQL_USER = os.getenv("MYSQL_USER", "root")
-MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD", "789456")
-MYSQL_DB = os.getenv("MYSQL_DB", "CarCustomShop")
+# ==========================================
+# รองรับทั้งแบบ DATABASE_URL (URL เดียว) และแบบแยกส่วน
+MYSQL_URL = os.getenv("MYSQL_URL")  # e.g., mysql://user:pass@host:port/db
 
+if MYSQL_URL:
+    parsed = urlparse(MYSQL_URL)
+    MYSQL_HOST = parsed.hostname or "localhost"
+    MYSQL_PORT = parsed.port or 3306
+    MYSQL_USER = parsed.username or "root"
+    MYSQL_PASSWORD = parsed.password or ""
+    MYSQL_DB = parsed.path.lstrip("/") or "CarCustomShop"
+else:
+    MYSQL_HOST = os.getenv("MYSQL_HOST", "localhost")
+    MYSQL_PORT = int(os.getenv("MYSQL_PORT", 3306))
+    MYSQL_USER = os.getenv("MYSQL_USER", "root")
+    MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD", "789456")
+    MYSQL_DB = os.getenv("MYSQL_DB", "CarCustomShop")
+
+# ==========================================
 # MongoDB Configuration
-MONGO_HOST = os.getenv("MONGO_HOST", "localhost")
-MONGO_PORT = int(os.getenv("MONGO_PORT", 27017))
+# ==========================================
+# ลำดับความสำคัญ: MONGO_URI > {MONGO_HOST, MONGO_PORT, MONGO_DB}
+MONGO_URI = os.getenv("MONGO_URI")
 MONGO_DB = os.getenv("MONGO_DB", "CarCustomShop")
 
-# Build MongoDB URI
-MONGO_URI = f"mongodb://{MONGO_HOST}:{MONGO_PORT}/"
+if not MONGO_URI:
+    MONGO_HOST = os.getenv("MONGO_HOST", "localhost")
+    MONGO_PORT = int(os.getenv("MONGO_PORT", 27017))
+    MONGO_URI = f"mongodb://{MONGO_HOST}:{MONGO_PORT}/"
 
-# Flask Configuration
+# ==========================================
+# Flask & Security Configuration
+# ==========================================
 FLASK_ENV = os.getenv("FLASK_ENV", "development")
 DEBUG = FLASK_ENV == "development"
 
 # JWT Configuration
-JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "testsecretkey")
+JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "testsecretkey_change_me_in_prod")
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRATION_HOURS = int(os.getenv("JWT_EXPIRATION_HOURS", 24))
 
-# Retry Configuration (สำหรับการพยายามเชื่อมต่อฐานข้อมูล)
-DB_RETRY_ATTEMPTS = int(os.getenv("DB_RETRY_ATTEMPTS", 5))
-DB_RETRY_DELAY = int(os.getenv("DB_RETRY_DELAY", 1))
+# Retry Configuration
+DB_RETRY_ATTEMPTS = int(os.getenv("DB_RETRY_ATTEMPTS", 3))
+DB_RETRY_DELAY = int(os.getenv("DB_RETRY_DELAY", 2))
 
 # ═══════════════════════════════════════════════════════════════
-# ฟังก์ชันตรวจสอบการเชื่อมต่อ
+# ฟังก์ชันตรวจสอบการเชื่อมต่อ (Helper for local only)
 # ═══════════════════════════════════════════════════════════════
-
-def check_port_open(host, port, timeout=5):
-    """ตรวจสอบว่าพอร์ตเปิดหรือไม่"""
-    try:
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.settimeout(timeout)
-        result = sock.connect_ex((host, port))
-        sock.close()
-        return result == 0
-    except Exception as e:
-        print(f"❌ Error checking {host}:{port} - {str(e)}")
-        return False
 
 def check_db_connection():
-    """ตรวจสอบและรอให้ฐานข้อมูลเชื่อมต่อได้"""
+    """ตรวจสอบการทำงานของฐานข้อมูลเบื้องต้น"""
+    # ใน Production บน Cloud บางครั้งเราข้ามการเช็ค Port ตรงๆ เพราะอาจติด Firewall
+    if os.getenv("SKIP_PORT_CHECK") == "true":
+        return True
+        
     print("\n" + "="*60)
     print("🔍 ตรวจสอบการเชื่อมต่อฐานข้อมูล...")
-    print("="*60)
     
-    # Check MySQL
-    print(f"\n[1/2] ตรวจสอบ MySQL: {MYSQL_HOST}:{MYSQL_PORT}")
+    # Check MySQL Port
     mysql_ready = False
-    for attempt in range(1, DB_RETRY_ATTEMPTS + 1):
-        if check_port_open(MYSQL_HOST, MYSQL_PORT):
-            print(f"✅ MySQL พร้อม (ความพยายาม {attempt}/{DB_RETRY_ATTEMPTS})")
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(2)
+        if sock.connect_ex((MYSQL_HOST, MYSQL_PORT)) == 0:
+            print(f"✅ MySQL Connection Available ({MYSQL_HOST}:{MYSQL_PORT})")
             mysql_ready = True
-            break
-        else:
-            if attempt < DB_RETRY_ATTEMPTS:
-                print(f"⏳ MySQL ยังไม่พร้อม... รอ {DB_RETRY_DELAY} วินาที (ครั้งที่ {attempt}/{DB_RETRY_ATTEMPTS})")
-                time.sleep(DB_RETRY_DELAY)
-            else:
-                print(f"❌ MySQL ไม่สามารถเชื่อมต่อหลังจาก {DB_RETRY_ATTEMPTS} ครั้ง")
-                print(f"   ตรวจสอบ: MySQL Service ทำงานอยู่ที่ {MYSQL_HOST}:{MYSQL_PORT}")
+        sock.close()
+    except: pass
     
-    # Check MongoDB
-    print(f"\n[2/2] ตรวจสอบ MongoDB: {MONGO_HOST}:{MONGO_PORT}")
+    # Check Mongo Port (เฉพาะถ้าเป็น localhost)
     mongo_ready = False
-    for attempt in range(1, DB_RETRY_ATTEMPTS + 1):
-        if check_port_open(MONGO_HOST, MONGO_PORT):
-            print(f"✅ MongoDB พร้อม (ความพยายาม {attempt}/{DB_RETRY_ATTEMPTS})")
-            mongo_ready = True
-            break
-        else:
-            if attempt < DB_RETRY_ATTEMPTS:
-                print(f"⏳ MongoDB ยังไม่พร้อม... รอ {DB_RETRY_DELAY} วินาที (ครั้งที่ {attempt}/{DB_RETRY_ATTEMPTS})")
-                time.sleep(DB_RETRY_DELAY)
-            else:
-                print(f"❌ MongoDB ไม่สามารถเชื่อมต่อหลังจาก {DB_RETRY_ATTEMPTS} ครั้ง")
-                print(f"   ตรวจสอบ: MongoDB Service ทำงานอยู่ที่ {MONGO_HOST}:{MONGO_PORT}")
-    
-    print("\n" + "="*60)
-    if mysql_ready and mongo_ready:
-        print("✅ ฐานข้อมูลทั้งหมดพร้อมแล้ว!")
-    elif mysql_ready:
-        print("⚠️  MySQL พร้อม แต่ MongoDB ไม่พร้อม")
-    elif mongo_ready:
-        print("⚠️  MongoDB พร้อม แต่ MySQL ไม่พร้อม")
+    if "localhost" in MONGO_URI or "127.0.0.1" in MONGO_URI:
+        try:
+            parsed_mongo = urlparse(MONGO_URI)
+            m_host = parsed_mongo.hostname or "localhost"
+            m_port = parsed_mongo.port or 27017
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(2)
+            if sock.connect_ex((m_host, m_port)) == 0:
+                print(f"✅ MongoDB Connection Available ({m_host}:{m_port})")
+                mongo_ready = True
+            sock.close()
+        except: pass
     else:
-        print("❌ ฐานข้อมูลไม่พร้อม!")
+        # ถ้าเป็น Cloud Mongo (Atlas) เราข้ามการเช็ค Port ตรงๆ
+        mongo_ready = True
+        
     print("="*60 + "\n")
-    
-    return mysql_ready or mongo_ready  # Return True ถ้าอย่างน้อยหนึ่งอันพร้อม
+    return True # ไม่ Block Startup แม้จะเช็คไม่ครบ

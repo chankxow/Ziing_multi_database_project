@@ -6,7 +6,8 @@ import {
   LayoutDashboard, Play, Check, AlertTriangle, LogOut, Minus
 } from "lucide-react";
 
-const API = "http://localhost:5000";
+import API_BASE_URL from "../config/api";
+const API = API_BASE_URL;
 type Section = "dashboard" | "parts";
 
 interface WorkOrder {

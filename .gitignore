@@ -112,3 +112,4 @@ backend/config.txt
 !frontend/.env.example
 !.gitignore
 !.gitattributes
+tempCodeRunnerFile.py

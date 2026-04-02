@@ -2,7 +2,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../contexts/AuthContext";
 
-const API = "http://localhost:5000";
+import API_BASE_URL from "../config/api";
+const API = API_BASE_URL;
 
 // ─── Types ──────────────────────────────────────────────
 interface WorkOrder {

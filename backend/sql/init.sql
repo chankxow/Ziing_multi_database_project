@@ -1,5 +1,15 @@
-CREATE DATABASE CarCustomShop;
-USE CarCustomShop;
+-- ==========================================
+-- Aiven MySQL: Fresh Start (ล้างตารางเก่าแล้วสร้างใหม่)
+-- ==========================================
+SET FOREIGN_KEY_CHECKS = 0;
+
+DROP TABLE IF EXISTS WorkOrder;
+DROP TABLE IF EXISTS Vehicle;
+DROP TABLE IF EXISTS User;
+DROP TABLE IF EXISTS Customer;
+DROP TABLE IF EXISTS Role;
+
+SET FOREIGN_KEY_CHECKS = 1;
 
 -- 1. Create Role table
 CREATE TABLE IF NOT EXISTS Role (
@@ -61,30 +71,30 @@ CREATE TABLE IF NOT EXISTS WorkOrder (
 -- Insert sample data
 -- ==========================================
 
--- Insert Roles
-INSERT INTO Role (RoleName) VALUES 
+-- Insert Roles (ใช้ IGNORE ป้องกัน Error เมื่อรันซ้ำ)
+INSERT IGNORE INTO Role (RoleName) VALUES 
 ('Admin'),
 ('Mechanic'),
 ('Receptionist');
 
--- Insert Users (Passwords should be hashed in production, e.g., bcrypt)
-INSERT INTO User (Username, PasswordHash, FirstName, LastName, RoleID) VALUES 
+-- Insert Users (ใช้ IGNORE ป้องกัน Error เมื่อรันซ้ำ)
+INSERT IGNORE INTO User (Username, PasswordHash, FirstName, LastName, RoleID) VALUES 
 ('admin_ton', 'hashed_pass_1', 'Ton', 'Manager', 1),
 ('mech_boy', 'hashed_pass_2', 'Boy', 'Fixer', 2),
 ('rec_jane', 'hashed_pass_3', 'Jane', 'Smile', 3);
 
--- Insert Customers
-INSERT INTO Customer (FirstName, LastName, Phone, Email) VALUES 
+-- Insert Customers (ใช้ IGNORE ป้องกัน Error เมื่อรันซ้ำ)
+INSERT IGNORE INTO Customer (FirstName, LastName, Phone, Email) VALUES 
 ('John', 'Doe', '0801234567', 'john@example.com'),
 ('Jane', 'Smith', '0809876543', 'jane@example.com');
 
--- Insert Vehicles
-INSERT INTO Vehicle (CustomerID, Make, Model, Year, Color, LicensePlate) VALUES 
+-- Insert Vehicles (ใช้ IGNORE ป้องกัน Error เมื่อรันซ้ำ)
+INSERT IGNORE INTO Vehicle (CustomerID, Make, Model, Year, Color, LicensePlate) VALUES 
 (1, 'Toyota', 'Camry', 2022, 'Black', 'ABC-1234'),
 (2, 'Honda', 'Accord', 2021, 'Silver', 'XYZ-9876');
 
--- Insert WorkOrders
-INSERT INTO WorkOrder (VehicleID, UserID, Description, Status, TotalCost) VALUES 
+-- Insert WorkOrders (ใช้ IGNORE ป้องกัน Error เมื่อรันซ้ำ)
+INSERT IGNORE INTO WorkOrder (VehicleID, UserID, Description, Status, TotalCost) VALUES 
 (1, 3, 'เปลี่ยนถ่ายน้ำมันเครื่องและเช็คระยะ', 'Completed', 2500.00),
 (2, 2, 'ติดตั้งชุดแต่งสเกิร์ตรอบคัน', 'In Progress', 15000.00);
 

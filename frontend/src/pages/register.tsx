@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, type ChangeEvent, type FormEvent } from "react";
+import API_BASE_URL from "../config/api";
 
 export default function RacingRegister() {
   const [form, setForm] = useState({
@@ -8,11 +9,11 @@ export default function RacingRegister() {
     confirmPassword: "",
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
     if (form.password !== form.confirmPassword) {
@@ -26,7 +27,7 @@ export default function RacingRegister() {
     }
 
     try {
-      const res = await fetch("http://localhost:5000/register/customer", {
+      const res = await fetch(`${API_BASE_URL}/register/customer`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

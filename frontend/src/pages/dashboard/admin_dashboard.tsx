@@ -8,7 +8,8 @@ import {
   X,  LogOut, Database, Minus
 } from "lucide-react";
 
-const API = "http://localhost:5000";
+import API_BASE_URL from "../config/api";
+const API = API_BASE_URL;
 type Section = "dashboard" | "workorders" | "parts" | "staff";
 
 interface WorkOrder {
@@ -42,7 +43,7 @@ function useGet<T>(url: string, token: string, deps: unknown[] = []) {
     if (!token) return;
     const controller = new AbortController();
     setLoading(true); setError("");
-    fetch(`http://localhost:5000${url}`, {
+    fetch(`${API}${url}`, {
       signal: controller.signal,
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
     })

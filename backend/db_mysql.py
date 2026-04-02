@@ -1,16 +1,13 @@
 import pymysql
 import os
-from dotenv import load_dotenv
-
-load_dotenv()
-
-MYSQL_HOST     = os.getenv("MYSQL_HOST", "localhost")
-MYSQL_PORT     = int(os.getenv("MYSQL_PORT", 3306))
-MYSQL_USER     = os.getenv("MYSQL_USER", "root")
-MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD", "789456")
-MYSQL_DB       = os.getenv("MYSQL_DB", "CarCustomShop")
+from config import MYSQL_HOST, MYSQL_PORT, MYSQL_USER, MYSQL_PASSWORD, MYSQL_DB
 
 def get_connection():
+    # Aiven MySQL requires SSL — detect by hostname
+    use_ssl = "aivencloud.com" in (MYSQL_HOST or "")
+    
+    ssl_params = {"ssl": {"ssl_mode": "REQUIRED"}} if use_ssl else {}
+    
     return pymysql.connect(
         host=MYSQL_HOST,
         port=MYSQL_PORT,
@@ -20,6 +17,7 @@ def get_connection():
         cursorclass=pymysql.cursors.DictCursor,
         autocommit=True,
         connect_timeout=10,
+        **ssl_params,
     )
 
 def query(sql, params=None):
@@ -29,7 +27,7 @@ def query(sql, params=None):
             cursor.execute(sql, params or ())
             return cursor.fetchall()
     finally:
-        conn.close()  # ← ปิดทุกครั้งหลังใช้
+        conn.close()
 
 def execute(sql, params=None):
     conn = get_connection()
@@ -38,4 +36,4 @@ def execute(sql, params=None):
             cursor.execute(sql, params or ())
             return {"status": "success"}
     finally:
-        conn.close()  # ← ปิดทุกครั้งหลังใช้
+        conn.close()
